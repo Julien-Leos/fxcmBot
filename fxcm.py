@@ -40,6 +40,12 @@ class Fxcm(Singleton):
         """
         return self.con.get_candles(self.forexPair, period=period, number=number, start=start, end=end, columns=columns)
 
+    def subscribeMarket(self, callback=[]):
+        self.con.subscribe_market_data(self.forexPair, callback)
+
+    def unsubscribeMarket(self):
+        self.con.subscribe_market_data(self.forexPair)
+
     def displayDataFrame(self, dataFrame):
         pd.set_option('display.max_rows', dataFrame.shape[0] + 1)
         print(dataFrame)
