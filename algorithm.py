@@ -1,7 +1,7 @@
 class Algorithm():
 
     MIN_CANDLES = 10
-    STREAM_PERIOD = 2000 #In milliseconds
+    STREAM_PERIOD = 10000  # In milliseconds
 
     candles = []
 
@@ -9,7 +9,7 @@ class Algorithm():
         candles.append(newCandle)
         print(candles)
 
-    def displayCandles(data, dataframe):
+    def displayCandles(self, data, dataframe):
         print('%3d | %s | %s, %s, %s, %s, %s'
               % (len(dataframe), data['Symbol'],
                  pd.to_datetime(int(data['Updated']), unit='ms'),

@@ -45,6 +45,11 @@ class Bot():
             if delta > self.algo.STREAM_PERIOD:
                 self.createLastCandle(data, dataframe)
                 self.displayCandles(data, dataframe)
+                # data['Rates'][0] = actual price of the market
+                order = self.fxcm.buy(rate=data['Rates'][0], amount=3, limit=data['Rates']
+                                      [0] + 10, stop=data['Rates'][0] - 5, inPips=True)
+                print(order)
+                self.fxcm.closeByOrder(order)
         else:
             self.createLastCandle(data, dataframe)
 
@@ -64,11 +69,3 @@ bot = Bot({"isRealTime": True, "startDate": "2020/09/20 00:00",
            "endDate": "2020/09/21 00:00"})
 
 bot.run()
-
-
-# fxcm = Fxcm()
-
-# fxcm.subscribeMarket([print_data])
-# fxcm.unsubscribeMarket()
-
-# fxcm.close()
