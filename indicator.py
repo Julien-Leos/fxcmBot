@@ -35,9 +35,9 @@ period_6 = 6
 ma = moving_average(sample_close_data, period_6)
 for i in range(len(sample_close_data)):
     if 1.02*ma[i] < sample_close_data[i]:
-        print("buy")
-    elif 0.98*ma[i] > sample_close_data[i]:
         print("sell")
+    elif 0.98*ma[i] > sample_close_data[i]:
+        print("buy")
     else:
         print("wait")
 
