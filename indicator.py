@@ -7,7 +7,6 @@ from pyti.simple_moving_average import simple_moving_average as sma
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-
 def moving_average(data, period):
     """
     Simple Moving Average.
@@ -33,7 +32,16 @@ sample_close_data = [792.45, 802.88, 804.57, 809.93, 807.8,
         707.26, 708.97, 704.89, 710.25]
 
 period_6 = 6
-plt.plot(moving_average(sample_close_data, period_6), 'r', sample_close_data, 'b')
+ma = moving_average(sample_close_data, period_6)
+for i in range(len(sample_close_data)):
+    if 1.02*ma[i] < sample_close_data[i]:
+        print("buy")
+    elif 0.98*ma[i] > sample_close_data[i]:
+        print("sell")
+    else:
+        print("wait")
+
+plt.plot(moving_average(ma,period_6), 'r', sample_close_data, 'b')
 plt.ylabel('data')
 plt.xlabel('period')
 plt.title('simple moving average chart')
