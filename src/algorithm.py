@@ -1,7 +1,7 @@
 class Algorithm():
 
     MIN_CANDLES = 10
-    STREAM_PERIOD = 10000  # In milliseconds
+    STREAM_PERIOD = 3000  # In milliseconds
 
     candles = []
 

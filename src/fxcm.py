@@ -1,13 +1,17 @@
-import fxcmpy
 import datetime as dt
 import pandas as pd
-from utils import Singleton
 
 
-class Fxcm(Singleton):
-    con = fxcmpy.fxcmpy(config_file='fxcm.cfg')
+class Fxcm():
+    con = None
 
     forexPair = 'EUR/USD'
+
+    def __init__(self, devMode=False, con=None):
+        if devMode == False:
+            self.con = fxcmpy.fxcmpy(config_file='fxcm.cfg')
+        else:
+            self.con = con
 
     def setForexPair(self, newForexPair):
         """Set a new pair of Forex to work with
@@ -54,7 +58,7 @@ class Fxcm(Singleton):
     def unsubscribeMarket(self):
         """Unsubscribe from current subscribed market.
         """
-        self.con.subscribe_market_data(self.forexPair)
+        self.con.unsubscribe_market_data(self.forexPair)
 
     def buy(self, rate, amount, orderType='AtMarket', marketRange=0.0, limit=None, stop=None, inPips=False, trailingStep=None):
         """Place a buy order for the current Forex pair.
@@ -94,24 +98,29 @@ class Fxcm(Singleton):
         return self.con.open_trade(symbol=self.forexPair, is_buy=False, amount=amount, order_type=orderType, time_in_force="GTC",
                                    rate=rate, is_in_pips=inPips, limit=limit, at_market=marketRange, stop=stop, trailing_step=trailingStep)
 
-    def closeByInfo(self, tradeId, amount):
-        """Close a position by his trade id and his amount
+    def getOpenPosition(self, positionId):
+        """Get a position by his Id
 
         Args:
-            tradeId (int): Id of the trade to close
-            amount (int): Amount of the position in lot
+            positionId (int): Id of the position
         """
-        self.con.close_trade(trade_id=tradeId, amount=amount)
+        return self.con.get_open_position(positionId)
 
-    def closeByOrder(self, order):
-        """Close a position by his order object
+    def closePosition(self, positionId):
+        """Close a position by his Id
 
         Args:
-            order ([type]): [description]
+            positionId (int): Id of the position
         """
-        print("CLOSE ORDER %i OF %i lot" %
-              (order.get_tradeId(), order.get_amount()))
-        self.con.close_trade(trade_id=order.get_tradeId(), amount=order.get_amount())
+        self.getOpenPosition(positionId).close()
+
+    def deleteOrder(self, order):
+        """Delete an unexecuted order
+
+        Args:
+            orderId (int): Id of the order
+        """
+        order.delete()
 
     def displayDataFrame(self, dataFrame):
         """Display a panda's dataFrame object.
