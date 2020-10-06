@@ -2,6 +2,17 @@ import configparser
 from threading import Timer
 
 
+def displayDataFrame(self, dataFrame):
+    """Display a panda's dataFrame object.
+
+    Args:
+        dataFrame (dataFrame): dataFrame object to display
+    """
+    pd.set_option('display.max_rows', dataFrame.shape[0] + 1)
+    print(dataFrame)
+    pd.reset_option('display.max_rows')
+
+
 def dateDiffInMillisecond(date1, date2):
     delta = date1 - date2
     return (delta.days * 24 * 60 * 60 * 1000) + (delta.seconds * 1000) + (delta.microseconds / 1000)

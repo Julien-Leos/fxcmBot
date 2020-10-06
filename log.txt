@@ -1,136 +1,40 @@
-|ERROR|2020-09-28 15:09:44,424|Server reports an error: {'executed': False, 'error': '{"code":3,"message":"Amount should be divisible by 1","parameters":["1"]}'}.
-|ERROR|2020-09-28 15:09:44,430|URL: https://api-demo.fxcm.com:443/trading/close_trade
-|ERROR|2020-09-28 15:09:44,430|Headers: {'User-Agent': 'request', 'Accept-Encoding': 'gzip, deflate', 'Accept': 'application/json', 'Connection': 'keep-alive', 'Authorization': 'Bearer -EOk9UA8L96FbLVIAAWE258473905a18fb846948cbf51f412769ff564df9', 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': '67'}
-|ERROR|2020-09-28 15:09:44,430|Params: {'trade_id': 169710794, 'amount': 0.0, 'order_type': 'AtMarket', 'time_in_force': 'IOC'}
-|ERROR|2020-09-28 15:09:44,430|Bearer token: Bearer -EOk9UA8L96FbLVIAAWE258473905a18fb846948cbf51f412769ff564df9
-|ERROR|2020-09-28 15:09:44,431|Connection status: established
-|ERROR|2020-09-28 15:09:44,431|Socket session id: -EOk9UA8L96FbLVIAAWE
-|ERROR|2020-09-28 15:09:44,431|Can not parse server answer to json object: {"response":{"executed":false,"error":"{\"code\":3,\"message\":\"Amount should be divisible by 1\",\"parameters\":[\"1\"]}"},"data":{}}.
-|ERROR|2020-09-28 15:09:54,003|Socket returns unknown error.
-|ERROR|2020-09-28 15:09:54,003|Connection aborted, failed to reconnect
-|ERROR|2020-09-28 15:09:54,004|Call of standardizeStreamEntry raised an error:
-|ERROR|2020-09-28 15:09:54,004|<class 'OSError'>
-|ERROR|2020-09-28 15:09:54,004|Connection aborted, failed to reconnect
-|ERROR|2020-09-30 09:51:14,612|Call of standardizeStreamEntry raised an error:
-|ERROR|2020-09-30 09:51:14,618|<class 'AttributeError'>
-|ERROR|2020-09-30 09:51:14,618|'NoneType' object has no attribute 'get_tradeId'
-|ERROR|2020-09-30 10:01:09,733|Call of standardizeStreamEntry raised an error:
-|ERROR|2020-09-30 10:01:09,734|<class 'AttributeError'>
-|ERROR|2020-09-30 10:01:09,734|'Fxcm' object has no attribute 'closeByOrder'
-|ERROR|2020-09-30 10:01:20,679|Call of standardizeStreamEntry raised an error:
-|ERROR|2020-09-30 10:01:20,681|<class 'AttributeError'>
-|ERROR|2020-09-30 10:01:20,684|'Fxcm' object has no attribute 'closeByOrder'
-|ERROR|2020-09-30 10:04:52,220|Call of standardizeStreamEntry raised an error:
-|ERROR|2020-09-30 10:04:52,227|<class 'AttributeError'>
-|ERROR|2020-09-30 10:04:52,227|'Fxcm' object has no attribute 'closeByOrder'
-|ERROR|2020-09-30 10:06:18,387|Server reports an error: {'executed': False, 'error': '{"code":1,"parameters":[],"message":"The specified trade does not exist"}'}.
-|ERROR|2020-09-30 10:06:18,392|URL: https://api-demo.fxcm.com:443/trading/close_trade
-|ERROR|2020-09-30 10:06:18,392|Headers: {'User-Agent': 'request', 'Accept-Encoding': 'gzip, deflate', 'Accept': 'application/json', 'Connection': 'keep-alive', 'Authorization': 'Bearer Jt5jRKQvghSHEG_rAElU258473905a18fb846948cbf51f412769ff564df9', 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': '67'}
-|ERROR|2020-09-30 10:06:18,393|Params: {'trade_id': 365306099, 'amount': 0.0, 'order_type': 'AtMarket', 'time_in_force': 'IOC'}
-|ERROR|2020-09-30 10:06:18,393|Bearer token: Bearer Jt5jRKQvghSHEG_rAElU258473905a18fb846948cbf51f412769ff564df9
-|ERROR|2020-09-30 10:06:18,393|Connection status: established
-|ERROR|2020-09-30 10:06:18,393|Socket session id: Jt5jRKQvghSHEG_rAElU
-|ERROR|2020-09-30 10:06:18,393|Can not parse server answer to json object: {"response":{"executed":false,"error":"{\"code\":1,\"parameters\":[],\"message\":\"The specified trade does not exist\"}"},"data":{}}.
-|ERROR|2020-09-30 10:19:08,457|Server reports an error: {'executed': False, 'error': '{"code":1,"parameters":[],"message":"The specified trade does not exist"}'}.
-|ERROR|2020-09-30 10:19:08,469|URL: https://api-demo.fxcm.com:443/trading/close_trade
-|ERROR|2020-09-30 10:19:08,474|Headers: {'User-Agent': 'request', 'Accept-Encoding': 'gzip, deflate', 'Accept': 'application/json', 'Connection': 'keep-alive', 'Authorization': 'Bearer khjyH1-yEdosjnAsAEmA258473905a18fb846948cbf51f412769ff564df9', 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': '67'}
-|ERROR|2020-09-30 10:19:08,479|Params: {'trade_id': 365307033, 'amount': 0.0, 'order_type': 'AtMarket', 'time_in_force': 'IOC'}
-|ERROR|2020-09-30 10:19:08,479|Bearer token: Bearer khjyH1-yEdosjnAsAEmA258473905a18fb846948cbf51f412769ff564df9
-|ERROR|2020-09-30 10:19:08,479|Connection status: established
-|ERROR|2020-09-30 10:19:08,479|Socket session id: khjyH1-yEdosjnAsAEmA
-|ERROR|2020-09-30 10:19:08,479|Can not parse server answer to json object: {"response":{"executed":false,"error":"{\"code\":1,\"parameters\":[],\"message\":\"The specified trade does not exist\"}"},"data":{}}.
-|ERROR|2020-09-30 10:22:17,973|Server reports an error: {'executed': False, 'error': '{"code":1,"parameters":[],"message":"The specified trade does not exist"}'}.
-|ERROR|2020-09-30 10:22:17,973|URL: https://api-demo.fxcm.com:443/trading/close_trade
-|ERROR|2020-09-30 10:22:17,973|Headers: {'User-Agent': 'request', 'Accept-Encoding': 'gzip, deflate', 'Accept': 'application/json', 'Connection': 'keep-alive', 'Authorization': 'Bearer lLuXEp6Z8Ys_SI9GAEmP258473905a18fb846948cbf51f412769ff564df9', 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': '67'}
-|ERROR|2020-09-30 10:22:17,973|Params: {'trade_id': 365307239, 'amount': 0.0, 'order_type': 'AtMarket', 'time_in_force': 'IOC'}
-|ERROR|2020-09-30 10:22:17,973|Bearer token: Bearer lLuXEp6Z8Ys_SI9GAEmP258473905a18fb846948cbf51f412769ff564df9
-|ERROR|2020-09-30 10:22:17,973|Connection status: established
-|ERROR|2020-09-30 10:22:17,973|Socket session id: lLuXEp6Z8Ys_SI9GAEmP
-|ERROR|2020-09-30 10:22:17,973|Can not parse server answer to json object: {"response":{"executed":false,"error":"{\"code\":1,\"parameters\":[],\"message\":\"The specified trade does not exist\"}"},"data":{}}.
-|ERROR|2020-09-30 10:30:41,840|Server reports an error: {'executed': False, 'error': '{"code":1,"parameters":[],"message":"The specified trade does not exist"}'}.
-|ERROR|2020-09-30 10:30:41,841|URL: https://api-demo.fxcm.com:443/trading/close_trade
-|ERROR|2020-09-30 10:30:41,841|Headers: {'User-Agent': 'request', 'Accept-Encoding': 'gzip, deflate', 'Accept': 'application/json', 'Connection': 'keep-alive', 'Authorization': 'Bearer aKlYepJzO5h2sMKBAEmm258473905a18fb846948cbf51f412769ff564df9', 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': '67'}
-|ERROR|2020-09-30 10:30:41,841|Params: {'trade_id': 365307682, 'amount': 3.0, 'order_type': 'AtMarket', 'time_in_force': 'IOC'}
-|ERROR|2020-09-30 10:30:41,847|Bearer token: Bearer aKlYepJzO5h2sMKBAEmm258473905a18fb846948cbf51f412769ff564df9
-|ERROR|2020-09-30 10:30:41,853|Connection status: established
-|ERROR|2020-09-30 10:30:41,853|Socket session id: aKlYepJzO5h2sMKBAEmm
-|ERROR|2020-09-30 10:30:41,858|Can not parse server answer to json object: {"response":{"executed":false,"error":"{\"code\":1,\"parameters\":[],\"message\":\"The specified trade does not exist\"}"},"data":{}}.
-|ERROR|2020-09-30 10:47:02,699|Server reports an error: {'executed': False, 'error': '{"code":1,"parameters":[],"message":"The specified trade does not exist"}'}.
-|ERROR|2020-09-30 10:47:02,711|URL: https://api-demo.fxcm.com:443/trading/close_trade
-|ERROR|2020-09-30 10:47:02,724|Headers: {'User-Agent': 'request', 'Accept-Encoding': 'gzip, deflate', 'Accept': 'application/json', 'Connection': 'keep-alive', 'Authorization': 'Bearer aKlYepJzO5h2sMKBAEmm258473905a18fb846948cbf51f412769ff564df9', 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': '67'}
-|ERROR|2020-09-30 10:47:02,734|Params: {'trade_id': 365308494, 'amount': 0.0, 'order_type': 'AtMarket', 'time_in_force': 'IOC'}
-|ERROR|2020-09-30 10:47:02,740|Bearer token: Bearer aKlYepJzO5h2sMKBAEmm258473905a18fb846948cbf51f412769ff564df9
-|ERROR|2020-09-30 10:47:02,745|Connection status: established
-|ERROR|2020-09-30 10:47:02,750|Socket session id: aKlYepJzO5h2sMKBAEmm
-|ERROR|2020-09-30 10:47:02,757|Can not parse server answer to json object: {"response":{"executed":false,"error":"{\"code\":1,\"parameters\":[],\"message\":\"The specified trade does not exist\"}"},"data":{}}.
-|ERROR|2020-09-30 10:51:31,404|Call of standardizeStreamEntry raised an error:
-|ERROR|2020-09-30 10:51:31,410|<class 'AttributeError'>
-|ERROR|2020-09-30 10:51:31,410|'Fxcm' object has no attribute 'closeOrderById'
-|ERROR|2020-09-30 10:51:40,727|Call of standardizeStreamEntry raised an error:
-|ERROR|2020-09-30 10:51:40,733|<class 'AttributeError'>
-|ERROR|2020-09-30 10:51:40,738|'Fxcm' object has no attribute 'closeOrderById'
-|ERROR|2020-09-30 10:52:48,400|Call of standardizeStreamEntry raised an error:
-|ERROR|2020-09-30 10:52:48,413|<class 'ValueError'>
-|ERROR|2020-09-30 10:52:48,413|No open position with id 365308837.
-|ERROR|2020-09-30 11:04:31,502|Call of standardizeStreamEntry raised an error:
-|ERROR|2020-09-30 11:04:31,510|<class 'ValueError'>
-|ERROR|2020-09-30 11:04:31,517|No open position with id 169735695.
-|ERROR|2020-09-30 11:04:40,788|Call of standardizeStreamEntry raised an error:
-|ERROR|2020-09-30 11:04:40,788|<class 'ValueError'>
-|ERROR|2020-09-30 11:04:40,788|No open position with id 169735701.
-|ERROR|2020-09-30 11:34:35,227|Call of standardizeStreamEntry raised an error:
-|ERROR|2020-09-30 11:34:35,232|<class 'ValueError'>
-|ERROR|2020-09-30 11:34:35,239|No open position with id 169736168.
-|ERROR|2020-09-30 11:34:35,747|Call of standardizeStreamEntry raised an error:
-|ERROR|2020-09-30 11:34:35,752|<class 'ValueError'>
-|ERROR|2020-09-30 11:34:35,758|No open position with id 169736169.
-|ERROR|2020-09-30 11:39:29,293|Socket returns unknown error.
-|ERROR|2020-09-30 11:39:29,294|Connection aborted, failed to reconnect
-|ERROR|2020-09-30 11:39:29,498|Socket returns unknown error.
-|ERROR|2020-09-30 11:39:29,500|Connection aborted, failed to reconnect
-|ERROR|2020-09-30 11:39:29,708|Socket returns unknown error.
-|ERROR|2020-09-30 11:39:29,709|Connection aborted, failed to reconnect
-|ERROR|2020-09-30 11:41:04,556|Socket returns unknown error.
-|ERROR|2020-09-30 11:41:04,558|Connection aborted, failed to reconnect
-|ERROR|2020-09-30 11:41:40,480|Socket returns unknown error.
-|ERROR|2020-09-30 11:41:40,480|Connection aborted, failed to reconnect
-|ERROR|2020-09-30 11:41:40,506|Socket returns unknown error.
-|ERROR|2020-09-30 11:41:40,508|Connection aborted, failed to reconnect
-|ERROR|2020-09-30 12:04:04,681|FXCM Server reports an unknown error: {'executed': False}.
-|ERROR|2020-09-30 12:04:04,720|Can not parse server answer to json object: {"response":{"executed":false},"data":{}}.
-|ERROR|2020-09-30 12:05:06,501|FXCM Server reports an unknown error: {'executed': False}.
-|ERROR|2020-09-30 12:05:06,501|Can not parse server answer to json object: {"response":{"executed":false},"data":{}}.
-|ERROR|2020-10-01 16:11:19,326|Connection error: Connection refused by the server
-|ERROR|2020-10-01 16:17:30,710|FXCM Server reports an unknown error: {'executed': False}.
-|ERROR|2020-10-01 16:17:30,716|Can not parse server answer to json object: {"response":{"executed":false},"data":{}}.
-|ERROR|2020-10-01 16:17:40,741|Call of standardizeStreamEntry raised an error:
-|ERROR|2020-10-01 16:17:40,753|<class 'ValueError'>
-|ERROR|2020-10-01 16:17:40,754|No open position with id 169756317.
-|ERROR|2020-10-01 16:18:54,263|FXCM Server reports an unknown error: {'executed': False}.
-|ERROR|2020-10-01 16:18:54,268|Can not parse server answer to json object: {"response":{"executed":false},"data":{}}.
-|ERROR|2020-10-01 16:19:05,091|Call of standardizeStreamEntry raised an error:
-|ERROR|2020-10-01 16:19:05,096|<class 'ValueError'>
-|ERROR|2020-10-01 16:19:05,102|No open position with id 169756357.
-|ERROR|2020-10-01 16:19:08,329|Call of standardizeStreamEntry raised an error:
-|ERROR|2020-10-01 16:19:08,345|<class 'ValueError'>
-|ERROR|2020-10-01 16:19:08,345|No open position with id 169756359.
-|ERROR|2020-10-01 16:19:12,043|FXCM Server reports an unknown error: {'executed': False}.
-|ERROR|2020-10-01 16:19:12,067|Can not parse server answer to json object: {"response":{"executed":false},"data":{}}.
-|ERROR|2020-10-01 16:21:49,403|Call of standardizeStreamEntry raised an error:
-|ERROR|2020-10-01 16:21:49,403|<class 'ValueError'>
-|ERROR|2020-10-01 16:21:49,403|No open position with id 169756410.
-|ERROR|2020-10-05 17:06:55,283|Call of standardizeStreamEntry raised an error:
-|ERROR|2020-10-05 17:06:55,300|<class 'ValueError'>
-|ERROR|2020-10-05 17:06:55,305|No open position with id 169792497.
-|ERROR|2020-10-05 17:07:01,087|FXCM Server reports an unknown error: {'executed': False}.
-|ERROR|2020-10-05 17:07:01,087|Can not parse server answer to json object: {"response":{"executed":false},"data":{}}.
-|ERROR|2020-10-05 17:13:52,323|Call of standardizeStreamEntry raised an error:
-|ERROR|2020-10-05 17:13:52,323|<class 'ValueError'>
-|ERROR|2020-10-05 17:13:52,323|No open position with id 169792589.
-|ERROR|2020-10-05 17:34:08,061|Call of standardizeStreamEntry raised an error:
-|ERROR|2020-10-05 17:34:08,061|<class 'ValueError'>
-|ERROR|2020-10-05 17:34:08,061|No open position with id 169792869.
-|ERROR|2020-10-05 17:57:37,490|Error in get_candles: Illegal param. number: 600.0
-|ERROR|2020-10-05 17:58:19,184|Error in get_candles: Illegal param. number: 600.0
-|ERROR|2020-10-05 18:01:19,464|Error in get_candles: Illegal param. number: 600.0
-|ERROR|2020-10-05 18:04:59,766|Error in get_candles: Illegal param. number: 2020-09-24 00:00:00
+|ERROR|2020-10-06 14:54:22,792|Server reports an error: {'executed': False, 'error': '{"type":5,"sessionId":"EUDEMO_9D79F9758A5E7F1EE053E12B3C0AFAA0_10062020122655095257_CV1","requestId":"Request-770189","text":" TimeInForce %s did not pass validation.\\n","code":20180,"stack":""}'}.
+|ERROR|2020-10-06 14:54:22,798|URL: https://api-demo.fxcm.com:443/trading/open_trade
+|ERROR|2020-10-06 14:54:22,798|Headers: {'User-Agent': 'request', 'Accept-Encoding': 'gzip, deflate', 'Accept': 'application/json', 'Connection': 'keep-alive', 'Authorization': 'Bearer 0xJ5AoIymADBEEqVACEI258473905a18fb846948cbf51f412769ff564df9', 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': '141'}
+|ERROR|2020-10-06 14:54:22,798|Params: {'account_id': 1244452, 'symbol': 'EUR/USD', 'is_buy': 'true', 'rate': 1.18912, 'amount': 1, 'at_market': 0.0, 'order_type': 'MarketRange', 'time_in_force': 'GTC', 'limit': None, 'is_in_pips': 'false'}
+|ERROR|2020-10-06 14:54:22,799|Bearer token: Bearer 0xJ5AoIymADBEEqVACEI258473905a18fb846948cbf51f412769ff564df9
+|ERROR|2020-10-06 14:54:22,799|Connection status: established
+|ERROR|2020-10-06 14:54:22,799|Socket session id: 0xJ5AoIymADBEEqVACEI
+|ERROR|2020-10-06 14:54:22,799|Can not parse server answer to json object: {"response":{"executed":false,"error":"{\"type\":5,\"sessionId\":\"EUDEMO_9D79F9758A5E7F1EE053E12B3C0AFAA0_10062020122655095257_CV1\",\"requestId\":\"Request-770189\",\"text\":\" TimeInForce %s did not pass validation.\\n\",\"code\":20180,\"stack\":\"\"}"}}.
+|ERROR|2020-10-06 15:01:14,185|Server reports an error: {'executed': False, 'error': '{"type":5,"sessionId":"EUDEMO_9D79F9758A5E7F1EE053E12B3C0AFAA0_10062020122655095257_CV1","requestId":"Request-773628","text":" TimeInForce %s did not pass validation.\\n","code":20180,"stack":""}'}.
+|ERROR|2020-10-06 15:01:14,185|URL: https://api-demo.fxcm.com:443/trading/open_trade
+|ERROR|2020-10-06 15:01:14,185|Headers: {'User-Agent': 'request', 'Accept-Encoding': 'gzip, deflate', 'Accept': 'application/json', 'Connection': 'keep-alive', 'Authorization': 'Bearer 0xJ5AoIymADBEEqVACEI258473905a18fb846948cbf51f412769ff564df9', 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': '139'}
+|ERROR|2020-10-06 15:01:14,185|Params: {'account_id': 1244452, 'symbol': 'EUR/USD', 'is_buy': 'true', 'rate': 0.0, 'amount': 1, 'at_market': 0.002, 'order_type': 'MarketRange', 'time_in_force': 'GTC', 'limit': None, 'is_in_pips': 'false'}
+|ERROR|2020-10-06 15:01:14,186|Bearer token: Bearer 0xJ5AoIymADBEEqVACEI258473905a18fb846948cbf51f412769ff564df9
+|ERROR|2020-10-06 15:01:14,186|Connection status: established
+|ERROR|2020-10-06 15:01:14,186|Socket session id: 0xJ5AoIymADBEEqVACEI
+|ERROR|2020-10-06 15:01:14,186|Can not parse server answer to json object: {"response":{"executed":false,"error":"{\"type\":5,\"sessionId\":\"EUDEMO_9D79F9758A5E7F1EE053E12B3C0AFAA0_10062020122655095257_CV1\",\"requestId\":\"Request-773628\",\"text\":\" TimeInForce %s did not pass validation.\\n\",\"code\":20180,\"stack\":\"\"}"}}.
+|ERROR|2020-10-06 15:01:16,158|Server reports an error: {'executed': False, 'error': '{"type":5,"sessionId":"EUDEMO_9D79F9758A5E7F1EE053E12B3C0AFAA0_10062020122655095257_CV1","requestId":"Request-773635","text":" TimeInForce %s did not pass validation.\\n","code":20180,"stack":""}'}.
+|ERROR|2020-10-06 15:01:16,164|Server reports an error: {'executed': False, 'error': '{"type":5,"sessionId":"EUDEMO_9D79F9758A5E7F1EE053E12B3C0AFAA0_10062020122655095257_CV1","requestId":"Request-773637","text":" TimeInForce %s did not pass validation.\\n","code":20180,"stack":""}'}.
+|ERROR|2020-10-06 15:01:16,164|URL: https://api-demo.fxcm.com:443/trading/open_trade
+|ERROR|2020-10-06 15:01:16,164|URL: https://api-demo.fxcm.com:443/trading/open_trade
+|ERROR|2020-10-06 15:01:16,165|Headers: {'User-Agent': 'request', 'Accept-Encoding': 'gzip, deflate', 'Accept': 'application/json', 'Connection': 'keep-alive', 'Authorization': 'Bearer 0xJ5AoIymADBEEqVACEI258473905a18fb846948cbf51f412769ff564df9', 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': '139'}
+|ERROR|2020-10-06 15:01:16,165|Headers: {'User-Agent': 'request', 'Accept-Encoding': 'gzip, deflate', 'Accept': 'application/json', 'Connection': 'keep-alive', 'Authorization': 'Bearer 0xJ5AoIymADBEEqVACEI258473905a18fb846948cbf51f412769ff564df9', 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': '139'}
+|ERROR|2020-10-06 15:01:16,165|Params: {'account_id': 1244452, 'symbol': 'EUR/USD', 'is_buy': 'true', 'rate': 0.0, 'amount': 1, 'at_market': 0.002, 'order_type': 'MarketRange', 'time_in_force': 'GTC', 'limit': None, 'is_in_pips': 'false'}
+|ERROR|2020-10-06 15:01:16,165|Params: {'account_id': 1244452, 'symbol': 'EUR/USD', 'is_buy': 'true', 'rate': 0.0, 'amount': 1, 'at_market': 0.002, 'order_type': 'MarketRange', 'time_in_force': 'GTC', 'limit': None, 'is_in_pips': 'false'}
+|ERROR|2020-10-06 15:01:16,165|Bearer token: Bearer 0xJ5AoIymADBEEqVACEI258473905a18fb846948cbf51f412769ff564df9
+|ERROR|2020-10-06 15:01:16,165|Connection status: established
+|ERROR|2020-10-06 15:01:16,165|Bearer token: Bearer 0xJ5AoIymADBEEqVACEI258473905a18fb846948cbf51f412769ff564df9
+|ERROR|2020-10-06 15:01:16,165|Socket session id: 0xJ5AoIymADBEEqVACEI
+|ERROR|2020-10-06 15:01:16,165|Connection status: established
+|ERROR|2020-10-06 15:01:16,166|Socket session id: 0xJ5AoIymADBEEqVACEI
+|ERROR|2020-10-06 15:01:16,166|Can not parse server answer to json object: {"response":{"executed":false,"error":"{\"type\":5,\"sessionId\":\"EUDEMO_9D79F9758A5E7F1EE053E12B3C0AFAA0_10062020122655095257_CV1\",\"requestId\":\"Request-773637\",\"text\":\" TimeInForce %s did not pass validation.\\n\",\"code\":20180,\"stack\":\"\"}"}}.
+|ERROR|2020-10-06 15:01:16,166|Can not parse server answer to json object: {"response":{"executed":false,"error":"{\"type\":5,\"sessionId\":\"EUDEMO_9D79F9758A5E7F1EE053E12B3C0AFAA0_10062020122655095257_CV1\",\"requestId\":\"Request-773635\",\"text\":\" TimeInForce %s did not pass validation.\\n\",\"code\":20180,\"stack\":\"\"}"}}.
+|ERROR|2020-10-06 15:01:16,190|Server reports an error: {'executed': False, 'error': '{"type":5,"sessionId":"EUDEMO_9D79F9758A5E7F1EE053E12B3C0AFAA0_10062020122655095257_CV1","requestId":"Request-773647","text":" TimeInForce %s did not pass validation.\\n","code":20180,"stack":""}'}.
+|ERROR|2020-10-06 15:01:16,191|URL: https://api-demo.fxcm.com:443/trading/open_trade
+|ERROR|2020-10-06 15:01:16,191|Headers: {'User-Agent': 'request', 'Accept-Encoding': 'gzip, deflate', 'Accept': 'application/json', 'Connection': 'keep-alive', 'Authorization': 'Bearer 0xJ5AoIymADBEEqVACEI258473905a18fb846948cbf51f412769ff564df9', 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': '139'}
+|ERROR|2020-10-06 15:01:16,191|Params: {'account_id': 1244452, 'symbol': 'EUR/USD', 'is_buy': 'true', 'rate': 0.0, 'amount': 1, 'at_market': 0.002, 'order_type': 'MarketRange', 'time_in_force': 'GTC', 'limit': None, 'is_in_pips': 'false'}
+|ERROR|2020-10-06 15:01:16,191|Bearer token: Bearer 0xJ5AoIymADBEEqVACEI258473905a18fb846948cbf51f412769ff564df9
+|ERROR|2020-10-06 15:01:16,191|Connection status: established
+|ERROR|2020-10-06 15:01:16,191|Socket session id: 0xJ5AoIymADBEEqVACEI
+|ERROR|2020-10-06 15:01:16,191|Can not parse server answer to json object: {"response":{"executed":false,"error":"{\"type\":5,\"sessionId\":\"EUDEMO_9D79F9758A5E7F1EE053E12B3C0AFAA0_10062020122655095257_CV1\",\"requestId\":\"Request-773647\",\"text\":\" TimeInForce %s did not pass validation.\\n\",\"code\":20180,\"stack\":\"\"}"}}.

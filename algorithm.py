@@ -1,11 +1,12 @@
 class Algorithm():
+    fxcm = None
+    config = None
 
-    MIN_CANDLES = 10
-    STREAM_PERIOD = 3000  # In milliseconds
-
-    candles = []
+    def __init__(self, fxcm, config):
+        self.fxcm = fxcm
+        self.config = config
 
     def runNextInstance(self, newCandle, allCandles):
-        print(newCandle) # nouvelle bougie
-        print(allCandles) # historique des bougies depuis le subscribe
-
+        print(newCandle)
+        # print(allCandles)
+        self.fxcm.buy(1)
