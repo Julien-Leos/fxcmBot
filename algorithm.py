@@ -5,13 +5,7 @@ class Algorithm():
 
     candles = []
 
-    def runNextInstance(self, newCandle):
-        candles.append(newCandle)
-        print(candles)
+    def runNextInstance(self, newCandle, allCandles):
+        print(newCandle) # nouvelle bougie
+        print(allCandles) # historique des bougies depuis le subscribe
 
-    def displayCandles(self, data, dataframe):
-        print('%3d | %s | %s, %s, %s, %s, %s'
-              % (len(dataframe), data['Symbol'],
-                 pd.to_datetime(int(data['Updated']), unit='ms'),
-                 data['Rates'][0], data['Rates'][1], data['Rates'][2],
-                 data['Rates'][3]))

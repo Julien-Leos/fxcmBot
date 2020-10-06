@@ -24,16 +24,11 @@ class Bot():
         self.config = config
 
     def run(self):
-        self.fxcm.subscribeMarket([self.newCandleEntry])
+        self.fxcm.subscribeMarket([self.algo.runNextInstance])
         while self.isRunning:
             sleep(2) # Le programme dure 2 secondes et s'arrête
             self.fxcm.unsubscribeMarket()
             self.isRunning = False
-
-    def newCandleEntry(self, newCandle, allCandles):
-        print(newCandle) # nouvelle bougie
-        print(allCandles) # historique des bougies depuis le subscribe
-        return
 
 def mainDev(con, argv):
     config = parseConfigFile(argv)
