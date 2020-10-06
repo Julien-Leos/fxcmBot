@@ -100,3 +100,37 @@
 |ERROR|2020-09-30 12:04:04,720|Can not parse server answer to json object: {"response":{"executed":false},"data":{}}.
 |ERROR|2020-09-30 12:05:06,501|FXCM Server reports an unknown error: {'executed': False}.
 |ERROR|2020-09-30 12:05:06,501|Can not parse server answer to json object: {"response":{"executed":false},"data":{}}.
+|ERROR|2020-10-01 16:11:19,326|Connection error: Connection refused by the server
+|ERROR|2020-10-01 16:17:30,710|FXCM Server reports an unknown error: {'executed': False}.
+|ERROR|2020-10-01 16:17:30,716|Can not parse server answer to json object: {"response":{"executed":false},"data":{}}.
+|ERROR|2020-10-01 16:17:40,741|Call of standardizeStreamEntry raised an error:
+|ERROR|2020-10-01 16:17:40,753|<class 'ValueError'>
+|ERROR|2020-10-01 16:17:40,754|No open position with id 169756317.
+|ERROR|2020-10-01 16:18:54,263|FXCM Server reports an unknown error: {'executed': False}.
+|ERROR|2020-10-01 16:18:54,268|Can not parse server answer to json object: {"response":{"executed":false},"data":{}}.
+|ERROR|2020-10-01 16:19:05,091|Call of standardizeStreamEntry raised an error:
+|ERROR|2020-10-01 16:19:05,096|<class 'ValueError'>
+|ERROR|2020-10-01 16:19:05,102|No open position with id 169756357.
+|ERROR|2020-10-01 16:19:08,329|Call of standardizeStreamEntry raised an error:
+|ERROR|2020-10-01 16:19:08,345|<class 'ValueError'>
+|ERROR|2020-10-01 16:19:08,345|No open position with id 169756359.
+|ERROR|2020-10-01 16:19:12,043|FXCM Server reports an unknown error: {'executed': False}.
+|ERROR|2020-10-01 16:19:12,067|Can not parse server answer to json object: {"response":{"executed":false},"data":{}}.
+|ERROR|2020-10-01 16:21:49,403|Call of standardizeStreamEntry raised an error:
+|ERROR|2020-10-01 16:21:49,403|<class 'ValueError'>
+|ERROR|2020-10-01 16:21:49,403|No open position with id 169756410.
+|ERROR|2020-10-05 17:06:55,283|Call of standardizeStreamEntry raised an error:
+|ERROR|2020-10-05 17:06:55,300|<class 'ValueError'>
+|ERROR|2020-10-05 17:06:55,305|No open position with id 169792497.
+|ERROR|2020-10-05 17:07:01,087|FXCM Server reports an unknown error: {'executed': False}.
+|ERROR|2020-10-05 17:07:01,087|Can not parse server answer to json object: {"response":{"executed":false},"data":{}}.
+|ERROR|2020-10-05 17:13:52,323|Call of standardizeStreamEntry raised an error:
+|ERROR|2020-10-05 17:13:52,323|<class 'ValueError'>
+|ERROR|2020-10-05 17:13:52,323|No open position with id 169792589.
+|ERROR|2020-10-05 17:34:08,061|Call of standardizeStreamEntry raised an error:
+|ERROR|2020-10-05 17:34:08,061|<class 'ValueError'>
+|ERROR|2020-10-05 17:34:08,061|No open position with id 169792869.
+|ERROR|2020-10-05 17:57:37,490|Error in get_candles: Illegal param. number: 600.0
+|ERROR|2020-10-05 17:58:19,184|Error in get_candles: Illegal param. number: 600.0
+|ERROR|2020-10-05 18:01:19,464|Error in get_candles: Illegal param. number: 600.0
+|ERROR|2020-10-05 18:04:59,766|Error in get_candles: Illegal param. number: 2020-09-24 00:00:00
