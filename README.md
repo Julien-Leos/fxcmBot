@@ -5,6 +5,7 @@ A trading bot for FXCM broker platform
 ### Install miniconda
 - Go to https://conda.io/en/latest/miniconda.html
 - Install miniconda for Python 3.8
+- Disable `base` environment with `conda config --set auto_activate_base false`
 ### Create a conda environment
 - `conda create -n fxcm python`
 - `conda activate fxcm`
