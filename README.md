@@ -24,6 +24,11 @@ A trading bot for FXCM broker platform
 #### Development mode
 `python3 botDev.py [config file]` with config files in `config` folder (`fxcm.cfg` is not a bot-formated config file).
 The dev mode enable you to modify and restart the bot without waiting for fxcmpy to reconnect to the API (~20s each time).
+You have to add each file of the bot you wish to reload to the `botDev.py` file as follow:
+```
+# utils.py, algorithm.py and fxcm.py are reloaded each time you start the bot in dev mode
+l.load("bot", ["utils", "algorithm", "fxcm"])
+```
 
 ### Config file
 #### test_mode
