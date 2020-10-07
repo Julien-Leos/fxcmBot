@@ -15,6 +15,7 @@ A trading bot for FXCM broker platform
 - `pip install matplotlib`
 - `pip install configparser`
 - Install all other dependencies that I may have forget
+- `touch log.txt`
 
 ## How to use
 ### Start bot
