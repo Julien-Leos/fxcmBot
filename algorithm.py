@@ -11,4 +11,4 @@ class Algorithm():
         # print(allCandles)
         if len(self.fxcm.orders) == 0:
             self.fxcm.buy(1)
-        print(self.fxcm.orders)
+        print(self.fxcm.getLastCandle().name, self.fxcm.orders[0]['close'], round(self.fxcm.orders[0]['grossPL'], 3))

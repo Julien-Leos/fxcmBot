@@ -1,3 +1,4 @@
+import fxcmpy
 import datetime as dt
 import pandas as pd
 import time
@@ -13,7 +14,7 @@ class Fxcm():
 
     def __init__(self, config, devEnv, con):
         if devEnv == False:
-            self.con = fxcmpy.fxcmpy(config_file='fxcm.cfg')
+            self.con = fxcmpy.fxcmpy(config_file='config/fxcm.cfg')
         else:
             self.con = con
 
@@ -145,7 +146,7 @@ class FxcmTest():
 
     def __init__(self, config, devEnv, con):
         if devEnv == False:
-            self.con = fxcmpy.fxcmpy(config_file='fxcm.cfg')
+            self.con = fxcmpy.fxcmpy(config_file='config/fxcm.cfg')
         else:
             self.con = con
 
@@ -190,51 +191,58 @@ class FxcmTest():
         pass
 
     def feedMarketThread(self, callbacks):
-        for order in self.orders:
-            order = self.updateOrderValues(order)
-
+        # Get newCandle and remove newCandle from leftover candles
         newCandle = self.leftCandles.iloc[0]
         self.candles = self.candles.append(newCandle)
+        self.leftCandles = self.leftCandles.iloc[1:]
+
+        # Update all orders with new Candle
+        for order in self.orders:
+            order = self.updateOrderValues(order, newCandle)
+
+        # Call each callbacks with newCandle
         for callback in callbacks:
             callback(newCandle, self.candles)
-        self.leftCandles = self.leftCandles.iloc[1:]
 
     def initOrder(self, isBuy, amount, limit, stop):
         lastCandle = self.getLastCandle()
+        print(lastCandle)
         newOrder = pd.Series({
             "amountK": amount,
             "currency": self.forexPair,
             "isBuy": isBuy,
             "limit": limit,  # Transformer de pips en valeur brute si inPips == True
             "stop": stop,  # Transformer de pips en valeur brute si inPips == True
-            "open": lastCandle['bidclose'],
             "time": int(dt.datetime.timestamp(lastCandle.name)),
-            "tradeId": len(self.orders)
+            "tradeId": len(self.orders),
+            # Should be calculated every tick but it is too consuming
+            "pipCost": self.getPipCost(self.forexPair, lastCandle.name)
         })
-        newOrder = self.updateOrderValues(newOrder)
+        newOrder['open'] = lastCandle['askclose'] if newOrder['isBuy'] == True else lastCandle['bidclose']
+        newOrder = self.updateOrderValues(newOrder, lastCandle)
+
         self.orders.append(newOrder)
         return newOrder
 
-    def updateOrderValues(self, order):
-        lastCandle = self.getLastCandle()
+    def updateOrderValues(self, order, lastCandle):
         if order['isBuy'] == True:
             order['close'] = lastCandle['bidclose']
             order['grossPL'] = (order['close'] - order['open']) * self.LOT_SIZE
         else:
             order['close'] = lastCandle['askclose']
             order['grossPL'] = (order['open'] - order['close']) * self.LOT_SIZE
-        pipCost = self.getPipCost(self.forexPair, lastCandle)
-        order['visiblePL'] = order['grossPL'] * pipCost
+        order['visiblePL'] = order['grossPL'] * order['pipCost']
+
         return order
 
-    def getPipCost(self, forexPair, lastCandle):
+    def getPipCost(self, forexPair, date):
         if forexPair.find('JPY') == -1:
             multiplier = 0.0001
         else:
             multiplier = 0.01
 
         forexPairExchangeValue = self.con.get_candles(
-            forexPair, period='m1', number=1, start=lastCandle.name, end=lastCandle.name)['askclose'].iloc[0]
+            forexPair, period='m1', number=1, start=date, end=date)['askclose'].iloc[0]
         if forexPair.find(self.ACCOUNT_CURRENCY) != -1:
             return multiplier / forexPairExchangeValue * (self.LOT_SIZE / 10)
         else:
