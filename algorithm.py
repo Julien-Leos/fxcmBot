@@ -7,6 +7,8 @@ class Algorithm():
         self.config = config
 
     def runNextInstance(self, newCandle, allCandles):
-        print(newCandle)
+        # print(newCandle)
         # print(allCandles)
-        self.fxcm.buy(1)
+        if len(self.fxcm.orders) == 0:
+            self.fxcm.buy(1)
+        print(self.fxcm.orders)

@@ -135,10 +135,13 @@ class FxcmTest():
     forexPair = 'EUR/USD'
     config = None
 
-    unreadCandles = None
-    readCandles = None
+    leftCandles = None
+    candles = None
     orders = list()
     marketThread = None
+
+    LOT_SIZE = 10000
+    ACCOUNT_CURRENCY = 'EUR'
 
     def __init__(self, config, devEnv, con):
         if devEnv == False:
@@ -152,9 +155,8 @@ class FxcmTest():
             config['end_date'], "%Y/%m/%d %H:%M")
 
         self.config = config
-        self.unreadCandles = self.getCandles(
-            'm1', start=startDate, end=endDate)
-        self.readCandles = pd.DataFrame(columns=self.unreadCandles.columns)
+        self.leftCandles = self.getCandles('m1', start=startDate, end=endDate)
+        self.candles = pd.DataFrame(columns=self.leftCandles.columns)
 
     def setForexPair(self, newForexPair):
         self.forexPair = newForexPair
@@ -172,39 +174,11 @@ class FxcmTest():
     def unsubscribeMarket(self):
         self.marketThread.stop()
 
-    def buy(self, amount, orderType='AtMarket', rate=0.0, marketRange=0.0, limit=None, stop=None, inPips=False, trailingStep=None):        pass
-        newOpenPosition = {
-            amountK: amount,
-            currency: self.forexPair,
-            isBuy: True,
-            limit: limit, # Transformer de pips en valeur brute si inPips == True
-            stop: stop, # Transformer de pips en valeur brute si inPips == True
-            open: self.readCandles[-1]['askclose'],
-            close: self.readCandles[-1]['bidclose'],
-            time: int(time.time()),
-            tradeId: len(self.orders)
-        }
-        newOpenPosition['grossPL'] = (newOpenPosition['open'] - newOpenPosition['close']) * 100000
-        newOpenPosition['visiblePL'] = 'I DONT KNOW HOW TO COMPUTE THAT'
-        
-        self.orders.append(newOpenPosition)
+    def buy(self, amount, orderType='AtMarket', rate=0.0, marketRange=0.0, limit=None, stop=None, inPips=False, trailingStep=None):
+        return self.initOrder(True, amount, limit, stop)
 
     def sell(self, amount, orderType='AtMarket', rate=0.0, marketRange=0.0, limit=None, stop=None, inPips=False, trailingStep=None):
-        newOpenPosition = {
-            amountK: amount,
-            currency: self.forexPair,
-            isBuy: False,
-            limit: limit, # Transformer de pips en valeur brute si inPips == True
-            stop: stop, # Transformer de pips en valeur brute si inPips == True
-            open: self.readCandles[-1]['bidclose'],
-            close: self.readCandles[-1]['askclose'],
-            time: int(time.time()),
-            tradeId: len(self.orders)
-        }
-        newOpenPosition['grossPL'] = (newOpenPosition['open'] - newOpenPosition['close']) * 100000
-        newOpenPosition['visiblePL'] = 'I DONT KNOW HOW TO COMPUTE THAT'
-        
-        self.orders.append(newOpenPosition)
+        return self.initOrder(False, amount, limit, stop)
 
     def getOpenPosition(self, positionId):
         pass
@@ -216,8 +190,58 @@ class FxcmTest():
         pass
 
     def feedMarketThread(self, callbacks):
-        newCandle = self.unreadCandles.iloc[0]
-        self.readCandles = self.readCandles.append(newCandle)
+        for order in self.orders:
+            order = self.updateOrderValues(order)
+
+        newCandle = self.leftCandles.iloc[0]
+        self.candles = self.candles.append(newCandle)
         for callback in callbacks:
-            callback(newCandle, self.readCandles)
-        self.unreadCandles = self.unreadCandles.iloc[1:]
+            callback(newCandle, self.candles)
+        self.leftCandles = self.leftCandles.iloc[1:]
+
+    def initOrder(self, isBuy, amount, limit, stop):
+        lastCandle = self.getLastCandle()
+        newOrder = pd.Series({
+            "amountK": amount,
+            "currency": self.forexPair,
+            "isBuy": isBuy,
+            "limit": limit,  # Transformer de pips en valeur brute si inPips == True
+            "stop": stop,  # Transformer de pips en valeur brute si inPips == True
+            "open": lastCandle['bidclose'],
+            "time": int(dt.datetime.timestamp(lastCandle.name)),
+            "tradeId": len(self.orders)
+        })
+        newOrder = self.updateOrderValues(newOrder)
+        self.orders.append(newOrder)
+        return newOrder
+
+    def updateOrderValues(self, order):
+        lastCandle = self.getLastCandle()
+        if order['isBuy'] == True:
+            order['close'] = lastCandle['bidclose']
+            order['grossPL'] = (order['close'] - order['open']) * self.LOT_SIZE
+        else:
+            order['close'] = lastCandle['askclose']
+            order['grossPL'] = (order['open'] - order['close']) * self.LOT_SIZE
+        pipCost = self.getPipCost(self.forexPair, lastCandle)
+        order['visiblePL'] = order['grossPL'] * pipCost
+        return order
+
+    def getPipCost(self, forexPair, lastCandle):
+        if forexPair.find('JPY') == -1:
+            multiplier = 0.0001
+        else:
+            multiplier = 0.01
+
+        forexPairExchangeValue = self.con.get_candles(
+            forexPair, period='m1', number=1, start=lastCandle.name, end=lastCandle.name)['askclose'].iloc[0]
+        if forexPair.find(self.ACCOUNT_CURRENCY) != -1:
+            return multiplier / forexPairExchangeValue * (self.LOT_SIZE / 10)
+        else:
+            forexPairSecond = forexPair.split('/')[1]
+            return self.getPipCost(self.ACCOUNT_CURRENCY + '/' + forexPairSecond)
+
+    def getLastCandle(self):
+        if len(self.candles) == 0:
+            return self.leftCandles.iloc[0]
+        return self.candles.iloc[-1]

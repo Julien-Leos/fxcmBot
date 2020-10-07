@@ -16,6 +16,6 @@ class Loader():
 
         try:
             getattr(self.botFile, "mainDev")(session.getConnection(), argv)
-            print("Press 'Crtl-D' to close the programm")
+            print("\nPress 'Crtl-D' to close the programm")
         except Exception as e:
             print("Could not run function : ", e)

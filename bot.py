@@ -26,7 +26,7 @@ class Bot():
     def run(self):
         self.fxcm.subscribeMarket([self.algo.runNextInstance])
         while self.isRunning:
-            sleep(2)  # Le programme dure 2 secondes et s'arrête
+            sleep(10.5)  # Le programme dure 2 secondes et s'arrête
             self.fxcm.unsubscribeMarket()
             self.isRunning = False
 

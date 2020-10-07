@@ -1,8 +1,9 @@
 import configparser
+import pandas as pd
 from threading import Timer
 
 
-def displayDataFrame(self, dataFrame):
+def displayDataFrame(dataFrame):
     """Display a panda's dataFrame object.
 
     Args:

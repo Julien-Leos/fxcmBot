@@ -10,7 +10,7 @@ active = True
 
 while active:
     try:
-        input("Press 'return' to start the bot...")
+        while input("Press 'return' to start the bot...") != '': continue
         l.run(s, sys.argv)
 
     except EOFError:
