@@ -5,6 +5,22 @@ import time
 from threading import Timer
 from utils import *
 
+# ORDER
+# When doing a 'sell' or a 'buy', you get an order.
+# An order has three status: 'Waiting', 'Executing' and 'Canceled'.
+# An order with the status 'Waiting' is not yet executed and do not impact the account's balance yet. It needs to match some conditions to pass to the 'Executing' status.
+# An order with the status 'Executing' has been executed and has impacted the account's balance. It is ether an OpenPosition or a ClosedPosition.
+# An order with the status 'Canceled' has been canceled and will never impact the account's balance.
+
+# OPEN POSITION
+# When an Order pass from 'Waiting' to 'Executing' status, it creates an Open Position.
+
+# CLOSED POSITION
+# When you close an Open Position, it becames a Closed Position
+
+# TRADE
+# A trade is ether an Open Position or a Closed Position
+
 
 class Fxcm():
     con = None
@@ -66,6 +82,9 @@ class Fxcm():
         """Unsubscribe from current subscribed market.
         """
         self.con.unsubscribe_market_data(self.forexPair)
+
+    def getSubscribedSymbols(self):
+        return self.con.get_subscribed_symbols()
 
     def buy(self, amount, orderType='AtMarket', rate=0.0, marketRange=0.0, limit=None, stop=None, inPips=False, trailingStep=None):
         """Place a buy order for the current Forex pair.
@@ -253,3 +272,35 @@ class FxcmTest():
         if len(self.candles) == 0:
             return self.leftCandles.iloc[0]
         return self.candles.iloc[-1]
+
+
+class FxcmOrderTest():
+    order = None
+
+    fxcm = None
+
+    def __init__(self, fxcm, orderId, tradeId, forexPair, isBuy, amount, limit, stop, lastCandle):
+        self.fxcm = fxcm
+
+        self.order = pd.Series({
+            amountK: amount,
+            isBuy: isBuy,
+            buy: lastCandle['askclose'] if isBuy == True else 0,
+            sell: lastCandle['bidclose'] if isBuy == False else 0,
+            currency: forexPair,
+            limit: limit if limit != None else 0,
+            stop: stop if stop != None else 0,
+            isLimitOrder: True if limit != None else False,
+            isStopOrder: True if stop != None else False,
+            orderId: orderId,
+            tradeId: tradeId,
+            status: "Waiting",
+            time: int(dt.datetime.timestamp(lastCandle.name)),
+            type: 'AM'
+        })
+
+    def get_amount():
+        return self.order['amountK']
+
+    def get_associated_trade():
+        return self.fxcm.get

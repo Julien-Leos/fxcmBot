@@ -9,6 +9,7 @@ class Algorithm():
     def runNextInstance(self, newCandle, allCandles):
         # print(newCandle)
         # print(allCandles)
-        if len(self.fxcm.orders) == 0:
-            self.fxcm.buy(1)
-        print(self.fxcm.getLastCandle().name, self.fxcm.orders[0]['close'], round(self.fxcm.orders[0]['grossPL'], 3))
+        if len(self.fxcm.con.get_orders(kind="list")) == 0:
+            order = self.fxcm.buy(1)
+            print(order)
+            self.fxcm.unsubscribeMarket()
