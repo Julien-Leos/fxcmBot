@@ -1,14 +1,11 @@
-#moving average to do
-
-import numpy as np
-import pandas as pd
-from pyti import catch_errors
 from pyti.simple_moving_average import simple_moving_average as sma
 from pyti.bollinger_bands import upper_bollinger_band as ubb
 from pyti.bollinger_bands import middle_bollinger_band as mbb
 from pyti.bollinger_bands import lower_bollinger_band as lbb
 from pyti.bollinger_bands import percent_bandwidth as percent_b
 from pyti.relative_strength_index import relative_strength_index as rsi
+from pyti.double_smoothed_stochastic import double_smoothed_stochastic as dss
+
 
 def indicator(data, period):
     """""
@@ -20,42 +17,13 @@ def indicator(data, period):
     Coherency depicts the relation between the difference analysis results and how coinciding the indicator results are
     """""
 
-    _res = {'bb_res': None, 'rsi_res':None}
-#    _res['sma_res'] = sma_analysis(data, period)
+    _res = {'bb_res': None, 'rsi_res':None, 'dss_res':None}
     _res['bb_res'] = bb_analysis(data, period)
     _res['rsi_res'] = rsi_analysis(data, period)
-    """
-    key_min = min(_res.keys(), key=(lambda k: _res[k]))
-    key_max = max(_res.keys(), key=(lambda k: _res[k]))
-    _min = _res[key_min]
-    _max = _res[key_max]
-    coherency = {'relative': None, 'overall': None, 'similitary': None} ### CHECK THE COHERENCY BETWEEN THE 3 INDICATORS
-    coherency['overall'] = round(sum(_res.values())/len(_res)) ### THE AVERAGE VALUE GIVEN BY THE INDICATORS
-    if (_min > 0 and _max <= 3):
-        coherency['relative'] = 3 ### ARE THE INDICATORS IN A POSITIVE OR A NEGATIVE TREND ?
-    elif (_max < 0 and _min >= -3):
-        coherency['relative'] = -3
-    else:
-        coherency['relative'] = 0
-    temp_simil = {'a': None, 'b': None, 'c': None}
-    _length = range(len(_res)*2+1)
-    for i in _length:
-        if ((_res['sma_res'] - _res['bb_res']) in range(-i,i+1)):
-            temp_simil['a'] = -1*(i-len(_res))
-            break
-    for j in _length:
-        if ((_res['sma_res'] - _res['rsi_res']) in range(-j,j+1)):
-            temp_simil['b'] = -1*(j-len(_res))
-            break      
-    for l in _length:  
-        if ((_res['rsi_res'] - _res['bb_res']) in range(-l,l+1)):
-            temp_simil['c'] = -1*(l-len(_res))
-            break
-    simil_key = min(temp_simil.keys(), key=(lambda k: temp_simil[k]))
-    coherency['similitary'] = temp_simil[simil_key] ### HOW BIG IS THE GAP BETWEEN EACH INDICATOR'S VALUE
-    result = sum(coherency.values())
-    """
+    _res['dss_res'] = dss_analysis(data, period)
+
     result = round(sum(_res.values())/len(_res))
+    print(_res)
     if (-1 > result >= -3):
         return('Sell')
     elif (1 >= result >= -1):
@@ -63,17 +31,19 @@ def indicator(data, period):
     elif (3 >= result > 1):
         return('Buy')
 
-""" ### BOILINGER BAND ALREADY TAKE ACCOUNT OF THE SIMPLE MOVING AVERAGE
-def sma_analysis(data, period):
-    anal = sma(data, period)
+def dss_analysis(data, period):
+    anal = dss(data, period)
 
-    if (data[-1] > 1.02*anal[-1]):
+    if (anal[-1] > 70):
         return -3
-    elif (data[-1] < 0.98*anal[-1]):
-        return 3 
+    elif (anal[-1] < 30):
+        return 3
+    elif (30 <= anal[-1] < 50):
+        return 1
+    elif (50 < anal[-1] <= 70):
+        return -1
     else:
-        return 0    
-"""
+        return 0
 
 def bb_analysis(data, period):
     upperband = ubb(data, period)
@@ -125,7 +95,7 @@ sample_close_data = [792.65, 802.44, 804.97, 810.1, 809.36, 809.74,
 805.96, 807.05, 808.2, 808.49, 807.48, 805.23, 806.93, 797.25, 798.92,
 800.12, 800.94, 791.34, 765.84, 761.97, 757.65, 757.52, 759.28, 754.41,
 757.08, 753.41, 753.2, 735.63, 735.8, 729.48, 732.51, 727.2, 717.78,
-707.26, 708.97, 704.89, 700.25]
+707.26, 708.97, 704.89, 700]
 sample_open_data = [792.65, 802.44, 804.97, 810.1, 809.36, 809.74,
 813.47, 817.09, 813.84, 808.33, 816.82, 818.1, 814.88, 808.54, 809.14,
 793.75, 792.27, 777.49, 776.23, 765.78, 764.03, 777.64, 789.16, 785.8,
@@ -171,7 +141,37 @@ sample_low_data = [789.93, 800.42, 802.02, 807.1, 804.93, 807.34,
 797.94, 798.2, 789.16, 763.28, 759.63, 754.81, 755.09, 756.97, 752.26,
 754.28, 750.9, 750.26, 732.9, 733.42, 727.07, 730.1, 724.76, 715.58,
 704.91, 106.26, 102.58, 100.78]
-
+"""
+    key_min = min(_res.keys(), key=(lambda k: _res[k]))
+    key_max = max(_res.keys(), key=(lambda k: _res[k]))
+    _min = _res[key_min]
+    _max = _res[key_max]
+    coherency = {'relative': None, 'overall': None, 'similitary': None} ### CHECK THE COHERENCY BETWEEN THE 3 INDICATORS
+    coherency['overall'] = round(sum(_res.values())/len(_res))          ### THE AVERAGE VALUE GIVEN BY THE INDICATORS
+    if (_min > 0 and _max <= 3):
+        coherency['relative'] = 3                                       ### ARE THE INDICATORS IN A POSITIVE OR A NEGATIVE TREND ?
+    elif (_max < 0 and _min >= -3):
+        coherency['relative'] = -3
+    else:
+        coherency['relative'] = 0
+    temp_simil = {'a': None, 'b': None, 'c': None}
+    _length = range(len(_res)*2+1)
+    for i in _length:
+        if ((_res['sma_res'] - _res['bb_res']) in range(-i,i+1)):
+            temp_simil['a'] = -1*(i-len(_res))
+            break
+    for j in _length:
+        if ((_res['sma_res'] - _res['rsi_res']) in range(-j,j+1)):
+            temp_simil['b'] = -1*(j-len(_res))
+            break      
+    for l in _length:  
+        if ((_res['rsi_res'] - _res['bb_res']) in range(-l,l+1)):
+            temp_simil['c'] = -1*(l-len(_res))
+            break
+    simil_key = min(temp_simil.keys(), key=(lambda k: temp_simil[k]))
+    coherency['similitary'] = temp_simil[simil_key]                      ### HOW BIG IS THE GAP BETWEEN EACH INDICATOR'S VALUE
+    result = sum(coherency.values())
+"""
 """
 ma = sma(sample_close_data, period_6)
 for i in range(len(sample_close_data)):
@@ -198,6 +198,3 @@ plt.show()
 period_6 = 6
 
 print(indicator(sample_close_data, period_6))
-print(indicator(sample_open_data, period_6))
-print(indicator(sample_high_data, period_6))
-print(indicator(sample_low_data, period_6))
