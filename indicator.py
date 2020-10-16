@@ -24,7 +24,6 @@ def indicator(data, period):
     _res['ema_res'] = ema_analysis(data, period)
 
     result = round(sum(_res.values())/len(_res))
-    print(_res)
     if (-1 > result >= -3):
         return('Sell')
     elif (1 >= result >= -1):
@@ -78,9 +77,9 @@ def rsi_analysis(data, period):
 def ema_analysis(data, period):
     anal = ema(data, period)
     if (anal[-1] > data[-1]):
-        return -3
-    elif (anal[-1] < data[-1]):
         return 3
+    elif (anal[-1] < data[-1]):
+        return -3
     else:
         return 0
 
@@ -203,6 +202,6 @@ blue_patch = mpatches.Patch(color='blue', label='The closing price')
 plt.legend(handles=[red_patch, blue_patch])
 plt.show()
 """
-period_6 = 6
+#period_6 = 6
 
-print(indicator(sample_close_data, period_6))
+#print(indicator(sample_close_data, period_6))
