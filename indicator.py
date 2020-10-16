@@ -1,4 +1,4 @@
-from pyti.simple_moving_average import simple_moving_average as sma
+from pyti.exponential_moving_average import exponential_moving_average as ema
 from pyti.bollinger_bands import upper_bollinger_band as ubb
 from pyti.bollinger_bands import middle_bollinger_band as mbb
 from pyti.bollinger_bands import lower_bollinger_band as lbb
@@ -17,10 +17,11 @@ def indicator(data, period):
     Coherency depicts the relation between the difference analysis results and how coinciding the indicator results are
     """""
 
-    _res = {'bb_res': None, 'rsi_res':None, 'dss_res':None}
+    _res = {'bb_res': None, 'rsi_res':None, 'dss_res':None, 'ema_res':None}
     _res['bb_res'] = bb_analysis(data, period)
     _res['rsi_res'] = rsi_analysis(data, period)
     _res['dss_res'] = dss_analysis(data, period)
+    _res['ema_res'] = ema_analysis(data, period)
 
     result = round(sum(_res.values())/len(_res))
     print(_res)
@@ -74,7 +75,14 @@ def rsi_analysis(data, period):
     else:
         return 0
 
-
+def ema_analysis(data, period):
+    anal = ema(data, period)
+    if (anal[-1] > data[-1]):
+        return -3
+    elif (anal[-1] < data[-1]):
+        return 3
+    else:
+        return 0
 
 
 ########## EXAMPLE TO SHOW
