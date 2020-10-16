@@ -1,4 +1,5 @@
 from importlib import reload
+import time
 
 
 class Loader():
@@ -16,6 +17,6 @@ class Loader():
 
         try:
             getattr(self.botFile, "mainDev")(session.getConnection(), argv)
-            print("\nPress 'Crtl-D' to close the programm")
+            time.sleep(1)
         except Exception as e:
-            print("Could not run function : ", e)
+            print("Error: ", e)

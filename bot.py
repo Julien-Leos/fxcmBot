@@ -4,7 +4,8 @@ import pandas as pd
 from time import sleep
 
 from utils import dateDiffInMillisecond, parseConfigFile
-from fxcm import Fxcm, FxcmTest
+from fxcm import Fxcm
+from fxcmTest import FxcmTest
 from algorithm import Algorithm
 
 
@@ -13,10 +14,8 @@ class Bot():
     algo = None
     config: None
 
-    isRunning = True
-
     def __init__(self, config, devEnd, con=None):
-        if config.getboolean('test_mode') == False:
+        if config['test_mode'] == 'false':
             self.fxcm = Fxcm(config, devEnd, con)
         else:
             self.fxcm = FxcmTest(config, devEnd, con)
@@ -24,9 +23,13 @@ class Bot():
         self.config = config
 
     def run(self):
-        self.fxcm.subscribeMarket([self.algo.runNextInstance])
-        while len(self.fxcm.getSubscribedSymbols()) != 0:
-            pass
+        while True:
+            nextCandle = self.fxcm.getNextCandle()
+            if not nextCandle:
+                break
+            self.algo.runNextInstance(nextCandle[0], nextCandle[1])
+
+    def end(self, sig, frame):
         self.isRunning = False
 
 

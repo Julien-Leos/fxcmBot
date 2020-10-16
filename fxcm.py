@@ -1,25 +1,10 @@
 import fxcmpy
 import datetime as dt
 import pandas as pd
-import time
+import signal
+from time import sleep
 from threading import Timer
 from utils import *
-
-# ORDER
-# When doing a 'sell' or a 'buy', you get an order.
-# An order has three status: 'Waiting', 'Executing' and 'Canceled'.
-# An order with the status 'Waiting' is not yet executed and do not impact the account's balance yet. It needs to match some conditions to pass to the 'Executing' status.
-# An order with the status 'Executing' has been executed and has impacted the account's balance. It is ether an OpenPosition or a ClosedPosition.
-# An order with the status 'Canceled' has been canceled and will never impact the account's balance.
-
-# OPEN POSITION
-# When an Order pass from 'Waiting' to 'Executing' status, it creates an Open Position.
-
-# CLOSED POSITION
-# When you close an Open Position, it becames a Closed Position
-
-# TRADE
-# A trade is ether an Open Position or a Closed Position
 
 
 class Fxcm():
@@ -27,6 +12,9 @@ class Fxcm():
 
     forexPair = 'EUR/USD'
     config = None
+    isRunning = True
+
+    candles = None
 
     def __init__(self, config, devEnv, con):
         if devEnv == False:
@@ -35,6 +23,15 @@ class Fxcm():
             self.con = con
 
         self.config = config
+        candleColumns = self.getCandles(config['period'], number=1).columns
+        self.candles = pd.DataFrame(columns=candleColumns)
+
+        # End bot when Trigger Crtl-C
+        signal.signal(signal.SIGINT, self.end)
+
+    def end(self, sig, frame):
+        print("\nEnding Bot...")
+        self.isRunning = False
 
     def setForexPair(self, newForexPair):
         """Set a new pair of Forex to work with
@@ -67,240 +64,89 @@ class Fxcm():
         """
         return self.con.get_candles(self.forexPair, period=period, number=number, start=start, end=end, columns=columns)
 
-    def subscribeMarket(self, callbacks=[]):
-        """Subscribe to the realtime market price of the current Forex pair.
+    def getNextCandle(self):
+        while self.isRunning:
+            nextCandle = self.getCandles(
+                self.config['period'], number=1).iloc[0]
 
-        Args:
-            callbacks (list, optional): List of the callbacks to call each time the market price evolves. Callback's parameter should be as follow:
-                - data (dict): All informations about the new market price (such as date, askPrice, bidPrice etc...).
-                - dataframe (list): List of all the previous and newly added market prices since the subscription to the market.
-                Defaults to [].
-        """
-        self.con.subscribe_market_data(self.forexPair, callbacks)
+            # End bot when end_date is reached
+            if nextCandle.name >= dt.datetime.strptime(self.config['end_date'], "%Y/%m/%d %H:%M"):
+                print("Bot 'end_date' reached.\nEnding Bot...")
+                break
 
-    def unsubscribeMarket(self):
-        """Unsubscribe from current subscribed market.
-        """
-        self.con.unsubscribe_market_data(self.forexPair)
+            # Return next candle if not the same as previous candle
+            if self.candles.empty or not isDiffCandle(nextCandle, self.candles.iloc[-1]):
+                self.candles = self.candles.append(nextCandle)
+                return (nextCandle, self.candles)
+            print("SLEEP")
+            sleep(1)
+        return None
 
-    def getSubscribedSymbols(self):
-        return self.con.get_subscribed_symbols()
-
-    def buy(self, amount, orderType='AtMarket', rate=0.0, marketRange=0.0, limit=None, stop=None, inPips=False, trailingStep=None):
-        """Place a buy order for the current Forex pair.
+    def buy(self, amount, limit=None, stop=None, trailingStep=None):
+        """Open a buy position for the current Forex pair.
 
         Args:
             amount (int): Number of lot you want to buy
-            orderType (str, optional): Type of order you want to place. Possible values are: 'AtMarket' or 'MarketRange'. Defaults to 'AtMarket'. For more informations on orderType see: https://www.fxcm.com/markets/education/video/order-types/market-range-vs-at-best-orders/
-            rate (float): If orderType equals 'MarketRange', price at which you want to place the order. Defaults to 0.
-            marketRange (float, optional): If orderType equals 'MarketRange', defines in pips the range around the rate in which to place the order. Defaults to 0.
             limit (float, optional): Price above which it will automatically close the position. Defaults to None.
             stop (float, optional): Price under which it will automatically close the position. Defaults to None.
-            inPips (bool, optional): Whether the limit and stop rates are defined in pips or not. Defaults to False.
             trailingStep (float, optional): Number of pips above which the stop rate will increase and guarantee the gains. Defaults to None.
 
         Returns:
-            order: Order placed
+            positionId: Id of the position opened
         """
-        return self.con.open_trade(symbol=self.forexPair, is_buy=True, amount=amount, order_type=orderType, time_in_force="GTC",
-                                   rate=rate, is_in_pips=inPips, limit=limit, at_market=marketRange, stop=stop, trailing_step=trailingStep)
+        return self.con.open_trade(symbol=self.forexPair, is_buy=True, order_type="AtMarket", amount=amount, time_in_force="GTC", limit=limit, stop=stop, trailing_step=trailingStep).get_tradeId()
 
-    def sell(self, amount, orderType='AtMarket', rate=0.0, marketRange=0.0, limit=None, stop=None, inPips=False, trailingStep=None):
-        """Place a sell order for the current Forex pair.
+    def sell(self, amount, limit=None, stop=None, trailingStep=None):
+        """Open a sell position for the current Forex pair.
 
         Args:
             amount (int): Number of lot you want to sell
-            orderType (str, optional): Type of order you want to place. Possible values are: 'AtMarket' or 'MarketRange'. Defaults to 'AtMarket'. For more informations on orderType see: https://www.fxcm.com/markets/education/video/order-types/market-range-vs-at-best-orders/
-            rate (float): If orderType equals 'MarketRange', price at which you want to place the order. Defaults to 0.
-            marketRange (float, optional): If orderType equals 'MarketRange', defines in pips the range around the rate in which to place the order. Defaults to 0.
             limit (float, optional): Price under which it will automatically close the position. Defaults to None.
             stop (float, optional): Price above which it will automatically close the position. Defaults to None.
-            inPips (bool, optional): Whether the limit and stop rates are defined in pips or not. Defaults to False.
             trailingStep (float, optional): Number of pips above which the stop rate will decrease and guarantee the gains. Defaults to None.
 
         Returns:
-            order: Order placed
+            positionId: Id of the position opened
         """
-        return self.con.open_trade(symbol=self.forexPair, is_buy=False, amount=amount, order_type=orderType, time_in_force="GTC",
-                                   rate=rate, is_in_pips=inPips, limit=limit, at_market=marketRange, stop=stop, trailing_step=trailingStep)
+        return self.con.open_trade(symbol=self.forexPair, is_buy=False, order_type="AtMarket", amount=amount, time_in_force="GTC", limit=limit, stop=stop, trailing_step=trailingStep).get_tradeId()
 
-    def getOpenPosition(self, positionId):
+    def getPositions(self, kind="dataframe"):
+        """Get all positions
+
+        Args:
+            kind (str, optional): How to return the data. Possible values are: 'datframe' or 'list'. Defaults to "dataframe"".
+        """
+        return self.con.get_open_positions(kind)
+
+    def getPosition(self, positionId):
         """Get a position by his Id
 
         Args:
             positionId (int): Id of the position
         """
-        return self.con.get_open_position(positionId)
+        try:
+            return self.con.get_open_position(positionId)
+        except:
+            return None
+
+    def closePositions(self):
+        positions = self.getPositions('list')
+
+        for position in positions:
+            self.closePosition(position['tradeId'])
 
     def closePosition(self, positionId):
         """Close a position by his Id
 
         Args:
             positionId (int): Id of the position
+
+        Returns:
+            [bool]: True if the position has been closed. False otherwise.
         """
-        self.getOpenPosition(positionId).close()
+        positionToClose = self.getPosition(positionId)
 
-    def deleteOrder(self, order):
-        """Delete an unexecuted order
-
-        Args:
-            orderId (int): Id of the order
-        """
-        order.delete()
-
-
-class FxcmTest():
-    con = None
-
-    forexPair = 'EUR/USD'
-    config = None
-
-    leftCandles = None
-    candles = None
-    orders = list()
-    marketThread = None
-
-    LOT_SIZE = 10000
-    ACCOUNT_CURRENCY = 'EUR'
-
-    def __init__(self, config, devEnv, con):
-        if devEnv == False:
-            self.con = fxcmpy.fxcmpy(config_file='config/fxcm.cfg')
-        else:
-            self.con = con
-
-        startDate = dt.datetime.strptime(
-            config['start_date'], "%Y/%m/%d %H:%M")
-        endDate = dt.datetime.strptime(
-            config['end_date'], "%Y/%m/%d %H:%M")
-
-        self.config = config
-        self.leftCandles = self.getCandles('m1', start=startDate, end=endDate)
-        self.candles = pd.DataFrame(columns=self.leftCandles.columns)
-
-    def setForexPair(self, newForexPair):
-        self.forexPair = newForexPair
-
-    def getForexPair(self):
-        return self.forexPair
-
-    def getCandles(self, period, number=10, start=None, end=None, columns=[]):
-        return self.con.get_candles(self.forexPair, period=period, number=number, start=start, end=end, columns=columns)
-
-    def subscribeMarket(self, callbacks=[]):
-        self.marketThread = RepeatedTimer(
-            int(self.config['stream_period']) / 1000, self.feedMarketThread, callbacks)
-
-    def unsubscribeMarket(self):
-        self.marketThread.stop()
-
-    def buy(self, amount, orderType='AtMarket', rate=0.0, marketRange=0.0, limit=None, stop=None, inPips=False, trailingStep=None):
-        return self.initOrder(True, amount, limit, stop)
-
-    def sell(self, amount, orderType='AtMarket', rate=0.0, marketRange=0.0, limit=None, stop=None, inPips=False, trailingStep=None):
-        return self.initOrder(False, amount, limit, stop)
-
-    def getOpenPosition(self, positionId):
-        pass
-
-    def closePosition(self, positionId):
-        pass
-
-    def deleteOrder(self, order):
-        pass
-
-    def feedMarketThread(self, callbacks):
-        # Get newCandle and remove newCandle from leftover candles
-        newCandle = self.leftCandles.iloc[0]
-        self.candles = self.candles.append(newCandle)
-        self.leftCandles = self.leftCandles.iloc[1:]
-
-        # Update all orders with new Candle
-        for order in self.orders:
-            order = self.updateOrderValues(order, newCandle)
-
-        # Call each callbacks with newCandle
-        for callback in callbacks:
-            callback(newCandle, self.candles)
-
-    def initOrder(self, isBuy, amount, limit, stop):
-        lastCandle = self.getLastCandle()
-        print(lastCandle)
-        newOrder = pd.Series({
-            "amountK": amount,
-            "currency": self.forexPair,
-            "isBuy": isBuy,
-            "limit": limit,  # Transformer de pips en valeur brute si inPips == True
-            "stop": stop,  # Transformer de pips en valeur brute si inPips == True
-            "time": int(dt.datetime.timestamp(lastCandle.name)),
-            "tradeId": len(self.orders),
-            # Should be calculated every tick but it is too consuming
-            "pipCost": self.getPipCost(self.forexPair, lastCandle.name)
-        })
-        newOrder['open'] = lastCandle['askclose'] if newOrder['isBuy'] == True else lastCandle['bidclose']
-        newOrder = self.updateOrderValues(newOrder, lastCandle)
-
-        self.orders.append(newOrder)
-        return newOrder
-
-    def updateOrderValues(self, order, lastCandle):
-        if order['isBuy'] == True:
-            order['close'] = lastCandle['bidclose']
-            order['grossPL'] = (order['close'] - order['open']) * self.LOT_SIZE
-        else:
-            order['close'] = lastCandle['askclose']
-            order['grossPL'] = (order['open'] - order['close']) * self.LOT_SIZE
-        order['visiblePL'] = order['grossPL'] * order['pipCost']
-
-        return order
-
-    def getPipCost(self, forexPair, date):
-        if forexPair.find('JPY') == -1:
-            multiplier = 0.0001
-        else:
-            multiplier = 0.01
-
-        forexPairExchangeValue = self.con.get_candles(
-            forexPair, period='m1', number=1, start=date, end=date)['askclose'].iloc[0]
-        if forexPair.find(self.ACCOUNT_CURRENCY) != -1:
-            return multiplier / forexPairExchangeValue * (self.LOT_SIZE / 10)
-        else:
-            forexPairSecond = forexPair.split('/')[1]
-            return self.getPipCost(self.ACCOUNT_CURRENCY + '/' + forexPairSecond)
-
-    def getLastCandle(self):
-        if len(self.candles) == 0:
-            return self.leftCandles.iloc[0]
-        return self.candles.iloc[-1]
-
-
-class FxcmOrderTest():
-    order = None
-
-    fxcm = None
-
-    def __init__(self, fxcm, orderId, tradeId, forexPair, isBuy, amount, limit, stop, lastCandle):
-        self.fxcm = fxcm
-
-        self.order = pd.Series({
-            amountK: amount,
-            isBuy: isBuy,
-            buy: lastCandle['askclose'] if isBuy == True else 0,
-            sell: lastCandle['bidclose'] if isBuy == False else 0,
-            currency: forexPair,
-            limit: limit if limit != None else 0,
-            stop: stop if stop != None else 0,
-            isLimitOrder: True if limit != None else False,
-            isStopOrder: True if stop != None else False,
-            orderId: orderId,
-            tradeId: tradeId,
-            status: "Waiting",
-            time: int(dt.datetime.timestamp(lastCandle.name)),
-            type: 'AM'
-        })
-
-    def get_amount():
-        return self.order['amountK']
-
-    def get_associated_trade():
-        return self.fxcm.get
+        if not positionToClose:
+            return False
+        positionToClose.close()
+        return True

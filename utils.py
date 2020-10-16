@@ -10,13 +10,19 @@ def displayDataFrame(dataFrame):
         dataFrame (dataFrame): dataFrame object to display
     """
     pd.set_option('display.max_rows', dataFrame.shape[0] + 1)
+    pd.set_option('display.max_columns', dataFrame.shape[1] + 1)
     print(dataFrame)
     pd.reset_option('display.max_rows')
+    pd.reset_option('display.max_columns')
 
 
 def dateDiffInMillisecond(date1, date2):
     delta = date1 - date2
     return (delta.days * 24 * 60 * 60 * 1000) + (delta.seconds * 1000) + (delta.microseconds / 1000)
+
+
+def isDiffCandle(candle1, candle2):
+    return candle1.name == candle2.name
 
 
 def parseConfigFile(argv):
@@ -27,7 +33,7 @@ def parseConfigFile(argv):
             raise Exception("No FXCM_BOT section or test_mode field")
         if config['FXCM_BOT']['test_mode'] == 'true' and (not 'start_date' in config['FXCM_BOT'] or not 'end_date' in config['FXCM_BOT']):
             raise Exception("No start_date or end_date fields")
-        return config['FXCM_BOT']
+        return dict(config['FXCM_BOT'])
     except Exception as error:
         print("Error while parsing config file '%s': %s" % (argv[1], error))
         return None
