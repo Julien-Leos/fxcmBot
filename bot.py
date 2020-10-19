@@ -14,11 +14,11 @@ class Bot():
     algo = None
     config: None
 
-    def __init__(self, config, devEnd, con=None):
+    def __init__(self, config, con=None):
         if config['test_mode'] == 'false':
-            self.fxcm = Fxcm(config, devEnd, con)
+            self.fxcm = Fxcm(config, con)
         else:
-            self.fxcm = FxcmTest(config, devEnd, con)
+            self.fxcm = FxcmTest(config, con)
         self.algo = Algorithm(self.fxcm, config)
         self.config = config
 
@@ -38,7 +38,8 @@ def mainDev(con, argv):
     if not config:
         return
 
-    bot = Bot(config, True, con)
+    config['devEnv'] = True
+    bot = Bot(config, con)
     bot.run()
 
 
@@ -47,7 +48,8 @@ def main(argv):
     if not config:
         return
 
-    bot = Bot(config, False)
+    config['devEnv'] = False
+    bot = Bot(config)
     bot.run()
 
 

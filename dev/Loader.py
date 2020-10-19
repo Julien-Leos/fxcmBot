@@ -1,5 +1,4 @@
 from importlib import reload
-import time
 
 
 class Loader():
@@ -17,6 +16,5 @@ class Loader():
 
         try:
             getattr(self.botFile, "mainDev")(session.getConnection(), argv)
-            time.sleep(1)
         except Exception as e:
             print("Error: ", e)
