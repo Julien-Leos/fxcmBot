@@ -1,9 +1,9 @@
 import fxcmpy
+import signal
 import datetime as dt
 import pandas as pd
-import signal
+
 from time import sleep
-from threading import Timer
 from utils import *
 
 
@@ -16,8 +16,8 @@ class Fxcm():
 
     candles = None
 
-    def __init__(self, config, devEnv, con):
-        if devEnv == False:
+    def __init__(self, config, con):
+        if config['devEnv'] == False:
             self.con = fxcmpy.fxcmpy(config_file='config/fxcm.cfg')
         else:
             self.con = con
@@ -27,11 +27,14 @@ class Fxcm():
         self.candles = pd.DataFrame(columns=candleColumns)
 
         # End bot when Trigger Crtl-C
-        signal.signal(signal.SIGINT, self.end)
+        signal.signal(signal.SIGINT, self.__end)
 
-    def end(self, sig, frame):
+    def __end(self, sig, frame):
         print("\nEnding Bot...")
         self.isRunning = False
+
+    def getAccountInfo(self):
+        return self.con.get_accounts('list')[0]
 
     def setForexPair(self, newForexPair):
         """Set a new pair of Forex to work with
@@ -78,37 +81,44 @@ class Fxcm():
             if self.candles.empty or not isDiffCandle(nextCandle, self.candles.iloc[-1]):
                 self.candles = self.candles.append(nextCandle)
                 return (nextCandle, self.candles)
-            print("SLEEP")
+
+            # Display prompt and sleep 1 second
+            print("# Algorithm's last run at %s" %
+                  nextCandle.name, end="\r")
+            print("\033[A")
             sleep(1)
         return None
 
-    def buy(self, amount, limit=None, stop=None, trailingStep=None):
+    def buy(self, amount, limit=None, stop=None):
         """Open a buy position for the current Forex pair.
 
         Args:
             amount (int): Number of lot you want to buy
             limit (float, optional): Price above which it will automatically close the position. Defaults to None.
             stop (float, optional): Price under which it will automatically close the position. Defaults to None.
-            trailingStep (float, optional): Number of pips above which the stop rate will increase and guarantee the gains. Defaults to None.
 
         Returns:
             positionId: Id of the position opened
         """
-        return self.con.open_trade(symbol=self.forexPair, is_buy=True, order_type="AtMarket", amount=amount, time_in_force="GTC", limit=limit, stop=stop, trailing_step=trailingStep).get_tradeId()
+        order = self.con.open_trade(symbol=self.forexPair, is_buy=True, amount=amount,
+                                    order_type="AtMarket", time_in_force="GTC", limit=limit, stop=stop)
+        if order:
+            return order.get_tradeId()
+        print("FAILLLLLL", order)
+        return None
 
-    def sell(self, amount, limit=None, stop=None, trailingStep=None):
+    def sell(self, amount, limit=None, stop=None):
         """Open a sell position for the current Forex pair.
 
         Args:
             amount (int): Number of lot you want to sell
             limit (float, optional): Price under which it will automatically close the position. Defaults to None.
             stop (float, optional): Price above which it will automatically close the position. Defaults to None.
-            trailingStep (float, optional): Number of pips above which the stop rate will decrease and guarantee the gains. Defaults to None.
 
         Returns:
             positionId: Id of the position opened
         """
-        return self.con.open_trade(symbol=self.forexPair, is_buy=False, order_type="AtMarket", amount=amount, time_in_force="GTC", limit=limit, stop=stop, trailing_step=trailingStep).get_tradeId()
+        return self.con.open_trade(symbol=self.forexPair, is_buy=False, amount=amount, order_type="AtMarket", time_in_force="GTC", limit=limit, stop=stop).get_tradeId()
 
     def getPositions(self, kind="dataframe"):
         """Get all positions
@@ -130,19 +140,13 @@ class Fxcm():
             return None
 
     def closePositions(self):
-        positions = self.getPositions('list')
-
-        for position in positions:
-            self.closePosition(position['tradeId'])
+        self.con.close_all()
 
     def closePosition(self, positionId):
         """Close a position by his Id
 
         Args:
             positionId (int): Id of the position
-
-        Returns:
-            [bool]: True if the position has been closed. False otherwise.
         """
         positionToClose = self.getPosition(positionId)
 

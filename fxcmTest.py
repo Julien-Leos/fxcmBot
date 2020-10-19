@@ -1,155 +1,274 @@
+import fxcmpy
+import signal
+import datetime as dt
+import pandas as pd
+
+from time import sleep
+from utils import *
+
+
 class FxcmTest():
-    con = None
+    START_AMOUNT = 50000
 
-    forexPair = 'EUR/USD'
-    config = None
+    __con = None
 
-    leftCandles = None
-    candles = None
-    orders = list()
-    marketThread = None
+    __forexPair = 'EUR/USD'
+    __config = None
 
-    LOT_SIZE = 10000
-    ACCOUNT_CURRENCY = 'EUR'
+    __account = dict({
+        'balance': START_AMOUNT,
+        'equity': START_AMOUNT,
+        'usableMargin': START_AMOUNT,
+        'usdMr': 0,
+        'grossPL': 0
+    })
+    __leftCandles = None
+    __candles = None
+    __positions = list()
 
-    def __init__(self, config, devEnv, con):
-        if devEnv == False:
-            self.con = fxcmpy.fxcmpy(config_file='config/fxcm.cfg')
+    def __init__(self, config, con):
+        if config['devEnv'] == False:
+            self.__con = fxcmpy.fxcmpy(config_file='config/fxcm.cfg')
         else:
-            self.con = con
+            self.__con = con
 
         startDate = dt.datetime.strptime(
             config['start_date'], "%Y/%m/%d %H:%M")
         endDate = dt.datetime.strptime(
             config['end_date'], "%Y/%m/%d %H:%M")
 
-        self.config = config
-        self.leftCandles = self.getCandles(config['period'], start=startDate, end=endDate)
-        self.candles = pd.DataFrame(columns=self.leftCandles.columns)
+        self.__config = config
+        self.__leftCandles = self.getCandles(
+            config['period'], start=startDate, end=endDate)
+        self.__candles = pd.DataFrame(columns=self.__leftCandles.columns)
+
+        # End bot when Trigger Crtl-C
+        signal.signal(signal.SIGINT, self.__end)
+
+    def __end(self, sig, frame):
+        print("\nEnding Bot...")
+        self.__leftCandles = self.__leftCandles[0:0]
+
+    def getAccountInfo(self):
+        return self.__account
+
+    def __updateAccountInfo(self):
+        newGrossPL = sum([position.get_grossPL()
+                          for position in self.__positions])
+
+        self.__account['grossPL'] = newGrossPL
+        self.__account['equity'] = self.__account['balance'] + newGrossPL
+        self.__account['usableMargin'] = self.__account['equity'] - \
+            self.__account['usdMr']
 
     def setForexPair(self, newForexPair):
-        self.forexPair = newForexPair
+        """Set a new pair of Forex to work with
+
+        Args:
+            newForexPair (str): New pair of Forex
+        """
+        self.__forexPair = newForexPair
 
     def getForexPair(self):
-        return self.forexPair
+        """Get the actual pair of Forex
+
+        Returns:
+            str: Actual pair of Forex
+        """
+        return self.__forexPair
 
     def getCandles(self, period, number=10, start=None, end=None, columns=[]):
-        return self.con.get_candles(self.forexPair, period=period, number=number, start=start, end=end, columns=columns)
+        """Return historical market data from the fxcm database
 
-    def subscribeMarket(self, callbacks=[]):
-        self.marketThread = RepeatedTimer(
-            int(self.config['stream_period']) / 1000, self.feedMarketThread, callbacks)
+        Args:
+            period (str): Granularity of the data. Possible values are: ‘m1’, ‘m5’, ‘m15’, ‘m30’, ‘H1’, ‘H2’, ‘H3’, ‘H4’, ‘H6’, ‘H8’, ‘D1’, ‘W1’, or ‘M1’.
+            number (int, optional): Number of candles to receive. Defaults to 10.
+            start (datetime, optional): First date to receive data for. Defaults to None.
+            end (datetime, optional): Last date to receive data for. Defaults to None.
+            columns (list, optional): List of column labels the result should include. If empty, all columns are returned. Possible values are: ‘date’, ‘bidopen’, ‘bidclose’, ‘bidhigh’, ‘bidlow’, ‘askopen’, ‘askclose’, ‘askhigh’, ‘asklow’, ‘tickqty’. Also available is ‘asks’ as shortcut for all ask related columns and ‘bids’ for all bid related columns, respectively. Defaults to [].
 
-    def unsubscribeMarket(self):
-        self.marketThread.stop()
+        Returns:
+            DataFrame: Requested data
+        """
+        return self.__con.get_candles(self.__forexPair, period=period, number=number, start=start, end=end, columns=columns)
 
-    def buy(self, amount, limit=None, stop=None, trailingStep=None):
-        return self.initOrder(True, amount, limit, stop, trailingStep)
+    def getNextCandle(self):
+        # End bot when there is no leftover candles
+        if self.__leftCandles.empty:
+            return None
 
-    def sell(self, amount, limit=None, stop=None, trailingStep=None):
-        return self.initOrder(False, amount, limit, stop, trailingStep)
+        # Get nextCandle and remove nextCandle from leftover candles
+        nextCandle = self.__leftCandles.iloc[0]
+        self.__candles = self.__candles.append(nextCandle)
+        self.__leftCandles = self.__leftCandles.iloc[1:]
 
-    def getOpenPosition(self, positionId):
-        pass
+        # Update all positions with new Candle
+        for position in self.__positions:
+            position.update(nextCandle)
+        self.__updateAccountInfo()
+
+        return (nextCandle, self.__candles)
+
+    def buy(self, amount, limit=None, stop=None):
+        return self.__openPosition(True, amount, limit, stop)
+
+    def sell(self, amount, limit=None, stop=None):
+        return self.__openPosition(False, amount, limit, stop)
+
+    def __openPosition(self, isBuy, amount, limit, stop):
+        lastCandle = self.__getLastCandle()
+        newPosition = FxcmPositionTest(
+            self.__con, lastCandle, len(self.__positions), self.__forexPair, isBuy, amount, limit, stop)
+
+        self.__account['usdMr'] += newPosition.get_usedMargin()
+        if self.__account['equity'] - self.__account['usdMr'] < 0:
+            print("Bot: Can't open position %s: Not enough usable margin." %
+                  newPosition.get_tradeId())
+            return None
+
+        self.__positions.append(newPosition)
+        return newPosition.get_tradeId()
+
+    def getPositions(self, kind="dataframe"):
+        """Get all positions
+
+        Args:
+            kind (str, optional): How to return the data. Possible values are: 'datframe' or 'list'. Defaults to "dataframe"".
+        """
+        positionsList = [position.get_position()
+                         for position in self.__positions]
+        if kind == 'dataframe':
+            return pd.DataFrame(data=positionsList)
+        return positionsList
+
+    def getPosition(self, positionId):
+        """Get a position by his Id
+
+        Args:
+            positionId (int): Id of the position
+        """
+        return next(position for position in self.__positions if position.get_tradeId() == positionId)
+
+    def closePositions(self):
+        for position in self.__positions:
+            self.closePosition(position.get_tradeId())
 
     def closePosition(self, positionId):
-        pass
+        """Close a position by his Id
 
-    def deleteOrder(self, order):
-        pass
+        Args:
+            positionId (int): Id of the position
+        """
+        position = self.getPosition(positionId)
 
-    def feedMarketThread(self, callbacks):
-        # Get newCandle and remove newCandle from leftover candles
-        newCandle = self.leftCandles.iloc[0]
-        self.candles = self.candles.append(newCandle)
-        self.leftCandles = self.leftCandles.iloc[1:]
+        self.__account['balance'] += position.get_grossPL()
+        self.__account['usdMr'] -= position.get_usedMargin()
+        self.__positions.remove(position)
+        self.__updateAccountInfo()
+        return True
 
-        # Update all orders with new Candle
-        for order in self.orders:
-            order = self.updateOrderValues(order, newCandle)
+    def __getLastCandle(self):
+        if len(self.__candles) == 0:
+            return self.__leftCandles.iloc[0]
+        return self.__candles.iloc[-1]
 
-        # Call each callbacks with newCandle
-        for callback in callbacks:
-            callback(newCandle, self.candles)
 
-    def initOrder(self, isBuy, amount, limit, stop, trailingStep):
-        lastCandle = self.getLastCandle()
-        print(lastCandle)
-        newOrder = pd.Series({
-            "amountK": amount,
-            "currency": self.forexPair,
-            "isBuy": isBuy,
-            "limit": limit,
-            "stop": stop,
-            "time": int(dt.datetime.timestamp(lastCandle.name)),
-            "tradeId": len(self.orders),
-            # Should be calculated every tick but it is too consuming
-            "pipCost": self.getPipCost(self.forexPair, lastCandle.name)
+class FxcmPositionTest():
+    LOT_SIZE = 10000
+    ACCOUNT_CURRENCY = 'EUR'
+    MMR = 16.65
+
+    __con = None
+    __position = None
+
+    def __init__(self, con, lastCandle, tradeId, forexPair, isBuy, amount, limit, stop):
+        self.__con = con
+
+        self.__position = pd.Series({
+            'tradeId': tradeId,
+            'currency': forexPair,
+            'currencyPoint': self.__getPipCost(forexPair, lastCandle.name),
+            'isBuy': isBuy,
+            'amountK': amount,
+            'time': lastCandle.name,
+            'limit': limit or 0,
+            'stop': stop or 0,
+            'open': lastCandle['askclose'] if isBuy else lastCandle['bidclose'],
+            'close': 0,
+            'grossPL': 0,
+            'visiblePL': 0,
+            # I don't know how to compute MMR (16.65 is commonly used but not always)
+            'usedMargin': self.MMR
         })
-        newOrder['open'] = lastCandle['askclose'] if newOrder['isBuy'] == True else lastCandle['bidclose']
-        newOrder = self.updateOrderValues(newOrder, lastCandle)
+        self.update(lastCandle)
 
-        self.orders.append(newOrder)
-        return newOrder['tradeId']
-
-    def updateOrderValues(self, order, lastCandle):
-        if order['isBuy'] == True:
-            order['close'] = lastCandle['bidclose']
-            order['grossPL'] = (order['close'] - order['open']) * self.LOT_SIZE
+    def update(self, lastCandle):
+        if self.__position['isBuy'] == True:
+            self.__position['close'] = lastCandle['bidclose']
+            self.__position['grossPL'] = (self.__position['close'] -
+                                          self.__position['open']) * self.LOT_SIZE
         else:
-            order['close'] = lastCandle['askclose']
-            order['grossPL'] = (order['open'] - order['close']) * self.LOT_SIZE
-        order['visiblePL'] = order['grossPL'] * order['pipCost']
+            self.__position['close'] = lastCandle['askclose']
+            self.__position['grossPL'] = (
+                self.__position['open'] - self.__position['close']) * self.LOT_SIZE
+        self.__position['visiblePL'] = self.__position['grossPL'] * \
+            self.__position['currencyPoint']
 
-        return order
-
-    def getPipCost(self, forexPair, date):
+    def __getPipCost(self, forexPair, date):
         if forexPair.find('JPY') == -1:
             multiplier = 0.0001
         else:
             multiplier = 0.01
 
-        forexPairExchangeValue = self.con.get_candles(
-            forexPair, period='m1', number=1, start=date, end=date)['askclose'].iloc[0]
+        forexPairExchange = self.__con.get_candles(
+            forexPair, period='m1', number=1, start=date, end=date, columns=["askopen"])
+        if forexPairExchange.size == 0:
+            return self.__getPipCost(forexPair, date - dt.timedelta(minutes=1))
+        forexPairExchangeValue = forexPairExchange['askopen'].iloc[0]
         if forexPair.find(self.ACCOUNT_CURRENCY) != -1:
             return multiplier / forexPairExchangeValue * (self.LOT_SIZE / 10)
         else:
             forexPairSecond = forexPair.split('/')[1]
-            return self.getPipCost(self.ACCOUNT_CURRENCY + '/' + forexPairSecond)
+            return self.__getPipCost(self.ACCOUNT_CURRENCY + '/' + forexPairSecond)
 
-    def getLastCandle(self):
-        if len(self.candles) == 0:
-            return self.leftCandles.iloc[0]
-        return self.candles.iloc[-1]
+    def get_position(self):
+        return self.__position
 
+    def get_tradeId(self):
+        return self.__position['tradeId']
 
-# class FxcmOrderTest():
-#     order = None
+    def get_currency(self):
+        return self.__position['currency']
 
-#     fxcm = None
+    def get_currencyPoint(self):
+        return self.__position['currencyPoint']
 
-#     def __init__(self, fxcm, orderId, tradeId, forexPair, isBuy, amount, limit, stop, lastCandle):
-#         self.fxcm = fxcm
+    def get_isBuy(self):
+        return self.__position['isBuy']
 
-#         self.order = pd.Series({
-#             amountK: amount,
-#             isBuy: isBuy,
-#             buy: lastCandle['askclose'] if isBuy == True else 0,
-#             sell: lastCandle['bidclose'] if isBuy == False else 0,
-#             currency: forexPair,
-#             limit: limit if limit != None else 0,
-#             stop: stop if stop != None else 0,
-#             isLimitOrder: True if limit != None else False,
-#             isStopOrder: True if stop != None else False,
-#             orderId: orderId,
-#             tradeId: tradeId,
-#             status: "Waiting",
-#             time: int(dt.datetime.timestamp(lastCandle.name)),
-#             type: 'AM'
-#         })
+    def get_amount(self):
+        return self.__position['amountK']
 
-#     def get_amount():
-#         return self.order['amountK']
+    def get_time(self):
+        return self.__position['time']
 
-#     def get_associated_trade():
-#         return self.fxcm.get
+    def get_limit(self):
+        return self.__position['limit']
+
+    def get_stop(self):
+        return self.__position['stop']
+
+    def get_open(self):
+        return self.__position['open']
+
+    def get_close(self):
+        return self.__position['close']
+
+    def get_grossPL(self):
+        return self.__position['grossPL']
+
+    def get_visiblePL(self):
+        return self.__position['visiblePL']
+
+    def get_usedMargin(self):
+        return self.__position['usedMargin']
