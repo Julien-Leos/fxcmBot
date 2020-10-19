@@ -6,16 +6,17 @@ class Session():
         self.__connection__ = None
 
         try:
+            print("Connecting...")
             self.__connection__ = fxcmpy.fxcmpy(config_file='config/fxcm.cfg')
-            print("Connection successfull")
+            print("Connection successfull!")
         except Exception as e:
             self.__connection__ = None
             print("Connection failed : ", e)
 
     def close(self):
         if self.__connection__ != None:
-            print("Connection closed")
             self.__connection__.close()
+            print("Connection closed!")
 
     def isConnected(self):
         if self.__connection__ == None:
