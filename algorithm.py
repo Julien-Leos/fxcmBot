@@ -1,5 +1,10 @@
 import sys
-from utils import *
+from graph import Graph
+import pandas as pd
+import plotly.graph_objects as go
+from datetime import datetime
+from collections import namedtuple
+import numpy as np
 
 
 class Algorithm():
@@ -12,14 +17,24 @@ class Algorithm():
         self.fxcm = fxcm
         self.config = config
 
+    def isLastTick(self, date):
+        endDate = datetime.strptime(self.config['end_date'], '%Y/%m/%d %H:%M')
+        currentDate = date.to_pydatetime()
+        # Bug here, sometimes this wont work. (What if end_date is out of scope compared to last candle?)
+        return currentDate == endDate
+
     def runNextInstance(self, newCandle, allCandles):
         # Example algorithm which:
         # - Open a buy position if there is no opened position
         # - Try to close it imediatly but failed most of the time (see below why)
         # - Close the position if at least one in opened
 
-        accountInfo = self.fxcm.getAccountInfo()
-        print("DEBUG: Account Equity:", accountInfo['equity'])
+        if (len(allCandles) == 1):  # Is first Tick
+            accountInfo = self.fxcm.getAccountInfo()
+            print("DEBUG: Start Account Equity:", accountInfo['equity'])
+        if (self.isLastTick(newCandle.name)):  # Is last Tick
+            self.lastTick(newCandle, allCandles)
+            return
 
         if len(self.fxcm.getPositions('list')) == 0:
             self.positionId = self.fxcm.buy(1)
@@ -33,4 +48,37 @@ class Algorithm():
                     if self.fxcm.closePosition(self.positionId):
                         print("Close position %s" % self.positionId)
         else:
+            # Close positions (only in) realtime where positions could be opened on the external service
             self.fxcm.closePositions()
+
+    # Example Indicator
+    def randomize(self, x):
+        return x + (np.random.normal(scale=0.0001, size=len(x)) / 5)
+
+    def lastTick(self, newCandle, allCandles):
+        position = self.fxcm.getPosition(self.positionId)
+        if position and self.fxcm.closePosition(self.positionId):
+            print("Close position %s" % self.positionId)
+
+        accountInfo = self.fxcm.getAccountInfo()
+        print("DEBUG: Final Account Equity:", accountInfo['equity'])
+
+        Graph.addCandleSticks(
+            x=allCandles.index.to_pydatetime(),
+            open=allCandles['askopen'],
+            high=allCandles['askhigh'],
+            low=allCandles['asklow'],
+            close=allCandles['askclose'],
+            name='Market Candles')
+
+        # Example Indicator
+        indicatorData = np.linspace(
+            allCandles.iloc[0].askclose, allCandles.iloc[-1].askclose, len(allCandles))
+        Graph.addIndicator(
+            x=allCandles.index.to_pydatetime(),
+            y=self.randomize(indicatorData),
+            name='Example Indicator',
+            color="#0000ff"
+        )
+
+        Graph.render()
