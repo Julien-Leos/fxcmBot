@@ -30,8 +30,8 @@ l.load("bot", ["utils", "algorithm", "fxcm"])
 #### test_mode
 Ether `true` for backtesting mode or `false` for realtime mode.
 #### stream_period
-In millisecond, the time between each call to the algorithm with a new candle.
+Ether m1, m15. m30, H1, H2, H4, H6, H8, D1, W1 or M1
 #### start_date
 Start date for the backtesting mode
 #### end_date
-End date for the backtesting mode
+End date for the backtesting and realtime mode. For backtetsing, it must be anterior to the current date. For realtime, it must be ulterior to the current date.
