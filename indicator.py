@@ -7,6 +7,14 @@ from pyti.relative_strength_index import relative_strength_index as rsi
 from pyti.double_smoothed_stochastic import double_smoothed_stochastic as dss
 
 
+# Some tips by stan:
+# 1. Define a *trend* by using 2 emas (50, 200) + rsi.
+# 2. Then try to open positions.
+# Mix periods, to get better signals. (mostly trend).
+#
+# Stop loss and take profits. (Money Management! after strategy confirm).
+# Define those % on the getgo.
+# Use stop loss/tak profits AND also closePositions. (If signals are good enough)
 def indicator(data, period):
     """""
     _res is the result of the indicator analysis
@@ -18,10 +26,10 @@ def indicator(data, period):
     """""
 
     _res = {'bb_res': None, 'rsi_res':None, 'dss_res':None, 'ema_res':None}
-    _res['bb_res'] = bb_analysis(data, period)
-    _res['rsi_res'] = rsi_analysis(data, period)
-    _res['dss_res'] = dss_analysis(data, period)
-    _res['ema_res'] = ema_analysis(data, period)
+    _res['bb_res'] = bb_analysis(data, period) # Should be around 21 Period. // When to buy/sell
+    _res['rsi_res'] = rsi_analysis(data, period.convertH.last14) # Should be around 14 Period. // When to buy/sell
+    _res['dss_res'] = dss_analysis(data, period) # Should be around 14 ? // When to buy/sell
+    _res['ema_res'] = ema_analysis(data, period) # Should be around 20 Period. (Trend)
 
     result = round(sum(_res.values())/len(_res))
     if (-1 > result >= -3):
@@ -57,7 +65,7 @@ def bb_analysis(data, period):
     elif (midband[-1] < data[-1] <= upperband[-1]):
         return -1
     elif (midband[-1] > data[-1] >= lowerband[-1]):
-        return 1    
+        return 1
     else:
         return 0
 
@@ -87,7 +95,7 @@ def ema_analysis(data, period):
 ########## EXAMPLE TO SHOW
 ########## AN INDICATOR
 
-    
+
 sample_close_data = [792.65, 802.44, 804.97, 810.1, 809.36, 809.74,
 813.47, 817.09, 813.84, 808.33, 816.82, 818.1, 814.88, 808.54, 809.14,
 793.75, 792.27, 777.49, 776.23, 765.78, 764.03, 777.64, 789.16, 785.8,
@@ -170,8 +178,8 @@ sample_low_data = [789.93, 800.42, 802.02, 807.1, 804.93, 807.34,
     for j in _length:
         if ((_res['sma_res'] - _res['rsi_res']) in range(-j,j+1)):
             temp_simil['b'] = -1*(j-len(_res))
-            break      
-    for l in _length:  
+            break
+    for l in _length:
         if ((_res['rsi_res'] - _res['bb_res']) in range(-l,l+1)):
             temp_simil['c'] = -1*(l-len(_res))
             break
