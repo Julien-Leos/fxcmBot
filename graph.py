@@ -50,3 +50,11 @@ class Graph():
                 line_color=color
             )
         )
+
+    @staticmethod
+    def setTitle(title):
+        self = Graph.getInstance()
+        self.figure.update_layout(
+            title=go.layout.Title(text=title),
+            title_font_size=20
+        )

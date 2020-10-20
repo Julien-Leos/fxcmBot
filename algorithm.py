@@ -20,10 +20,9 @@ class Algorithm():
     def isLastTick(self, date):
         endDate = datetime.strptime(self.config['end_date'], '%Y/%m/%d %H:%M')
         currentDate = date.to_pydatetime()
-        # Bug here, sometimes this wont work. (What if end_date is out of scope compared to last candle?)
         return currentDate == endDate
 
-    def runNextInstance(self, newCandle, allCandles):
+    def runNextInstance(self, newCandle, allCandles):  # Tick
         # Example algorithm which:
         # - Open a buy position if there is no opened position
         # - Try to close it imediatly but failed most of the time (see below why)
@@ -51,16 +50,13 @@ class Algorithm():
             # Close positions (only in) realtime where positions could be opened on the external service
             self.fxcm.closePositions()
 
-    # Example Indicator
-    def randomize(self, x):
-        return x + (np.random.normal(scale=0.0001, size=len(x)) / 5)
-
     def lastTick(self, newCandle, allCandles):
         position = self.fxcm.getPosition(self.positionId)
         if position and self.fxcm.closePosition(self.positionId):
             print("Close position %s" % self.positionId)
 
         accountInfo = self.fxcm.getAccountInfo()
+        Graph.setTitle("Final Account Equity: {}".format(accountInfo['equity']))
         print("DEBUG: Final Account Equity:", accountInfo['equity'])
 
         Graph.addCandleSticks(
@@ -71,14 +67,11 @@ class Algorithm():
             close=allCandles['askclose'],
             name='Market Candles')
 
-        # Example Indicator
-        indicatorData = np.linspace(
-            allCandles.iloc[0].askclose, allCandles.iloc[-1].askclose, len(allCandles))
-        Graph.addIndicator(
-            x=allCandles.index.to_pydatetime(),
-            y=self.randomize(indicatorData),
-            name='Example Indicator',
-            color="#0000ff"
-        )
+        # Graph.addIndicator(
+        #     x=allCandles.index.to_pydatetime(),
+        #     y=allCandles['askhigh'],
+        #     name='Example Indicator',
+        #     color="#0000ff"
+        # )
 
         Graph.render()
