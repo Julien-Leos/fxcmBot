@@ -27,9 +27,9 @@ l.load("bot", ["utils", "algorithm", "fxcm"])
 ```
 
 ### Config file
-#### test_mode
+#### backtest
 Ether `true` for backtesting mode or `false` for realtime mode.
-#### stream_period
+#### period
 Ether m1, m15. m30, H1, H2, H4, H6, H8, D1, W1 or M1
 #### start_date
 Start date for the backtesting mode

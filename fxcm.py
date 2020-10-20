@@ -29,10 +29,6 @@ class Fxcm():
         # End bot when Trigger Crtl-C
         signal.signal(signal.SIGINT, self.__end)
 
-    def __end(self, sig, frame):
-        print("\nEnding Bot...")
-        self.isRunning = False
-
     def getAccountInfo(self):
         return self.con.get_accounts('list')[0]
 
@@ -67,7 +63,103 @@ class Fxcm():
         """
         return self.con.get_candles(self.forexPair, period=period, number=number, start=start, end=end, columns=columns)
 
-    def getNextCandle(self):
+    def buy(self, amount, limit=None, stop=None):
+        """Open a buy position for the current Forex pair.
+
+        Args:
+            amount (int): Number of lot you want to buy
+            limit (float, optional): Price above which it will automatically close the position. Defaults to None.
+            stop (float, optional): Price under which it will automatically close the position. Defaults to None.
+
+        Returns:
+            positionId: Id of the position opened
+        """
+        order = self.con.open_trade(symbol=self.forexPair, is_buy=True, amount=amount,
+                                    order_type="AtMarket", time_in_force="GTC", limit=limit, stop=stop)
+        sleep(10)  # Sleep so the order can became an opened position
+
+        if order:
+            return order.get_tradeId()
+        return None
+
+    def sell(self, amount, limit=None, stop=None):
+        """Open a sell position for the current Forex pair.
+
+        Args:
+            amount (int): Number of lot you want to sell
+            limit (float, optional): Price under which it will automatically close the position. Defaults to None.
+            stop (float, optional): Price above which it will automatically close the position. Defaults to None.
+
+        Returns:
+            positionId: Id of the position opened
+        """
+        order = self.con.open_trade(symbol=self.forexPair, is_buy=False, amount=amount,
+                                    order_type="AtMarket", time_in_force="GTC", limit=limit, stop=stop)
+        sleep(10)  # Sleep so the order can became an opened position
+
+        if order:
+            return order.get_tradeId()
+        return None
+
+    def getOpenPositions(self, kind="dataframe"):
+        """Get all opened positions
+
+        Args:
+            kind (str, optional): How to return the data. Possible values are: 'dataframe' or 'list'. Defaults to "dataframe"".
+        """
+        return self.con.get_open_positions(kind)
+
+    def getOpenPosition(self, positionId):
+        """Get an opened position by his Id
+
+        Args:
+            positionId (int): Id of the position
+        """
+        try:
+            return self.con.get_open_position(positionId)
+        except:
+            return None
+
+    def getClosePositions(self, kind="dataframe"):
+        """Get all closed positions
+
+        Args:
+            kind (str, optional): How to return the data. Possible values are: 'dataframe' or 'list'. Defaults to "dataframe"".
+        """
+        return self.con.get_closed_positions(kind)
+
+    def getClosePosition(self, positionId):
+        """Get a closed position by his Id
+
+        Args:
+            positionId (int): Id of the position
+        """
+        try:
+            return self.con.get_closed_position(positionId)
+        except:
+            return None
+
+    def closePositions(self):
+        self.con.close_all()
+
+    def closePosition(self, positionId):
+        """Close a position by his Id
+
+        Args:
+            positionId (int): Id of the position
+        """
+        positionToClose = self.getOpenPosition(positionId)
+
+        if positionToClose:
+            positionToClose.close()
+            return True
+        return False
+
+    def __end(self, sig, frame):
+        print("\nEnding Bot...")
+        self.isRunning = False
+
+    def __getNextCandle(self):
         while self.isRunning:
             nextCandle = self.getCandles(
                 self.config['period'], number=1).iloc[0]
@@ -88,69 +180,3 @@ class Fxcm():
             print("\033[A")
             sleep(1)
         return None
-
-    def buy(self, amount, limit=None, stop=None):
-        """Open a buy position for the current Forex pair.
-
-        Args:
-            amount (int): Number of lot you want to buy
-            limit (float, optional): Price above which it will automatically close the position. Defaults to None.
-            stop (float, optional): Price under which it will automatically close the position. Defaults to None.
-
-        Returns:
-            positionId: Id of the position opened
-        """
-        order = self.con.open_trade(symbol=self.forexPair, is_buy=True, amount=amount,
-                                    order_type="AtMarket", time_in_force="GTC", limit=limit, stop=stop)
-        if order:
-            return order.get_tradeId()
-        print("FAILLLLLL", order)
-        return None
-
-    def sell(self, amount, limit=None, stop=None):
-        """Open a sell position for the current Forex pair.
-
-        Args:
-            amount (int): Number of lot you want to sell
-            limit (float, optional): Price under which it will automatically close the position. Defaults to None.
-            stop (float, optional): Price above which it will automatically close the position. Defaults to None.
-
-        Returns:
-            positionId: Id of the position opened
-        """
-        return self.con.open_trade(symbol=self.forexPair, is_buy=False, amount=amount, order_type="AtMarket", time_in_force="GTC", limit=limit, stop=stop).get_tradeId()
-
-    def getPositions(self, kind="dataframe"):
-        """Get all positions
-
-        Args:
-            kind (str, optional): How to return the data. Possible values are: 'datframe' or 'list'. Defaults to "dataframe"".
-        """
-        return self.con.get_open_positions(kind)
-
-    def getPosition(self, positionId):
-        """Get a position by his Id
-
-        Args:
-            positionId (int): Id of the position
-        """
-        try:
-            return self.con.get_open_position(positionId)
-        except:
-            return None
-
-    def closePositions(self):
-        self.con.close_all()
-
-    def closePosition(self, positionId):
-        """Close a position by his Id
-
-        Args:
-            positionId (int): Id of the position
-        """
-        positionToClose = self.getPosition(positionId)
-
-        if not positionToClose:
-            return False
-        positionToClose.close()
-        return True

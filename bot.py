@@ -5,20 +5,20 @@ from time import sleep
 
 from utils import dateDiffInMillisecond, parseConfigFile
 from fxcm import Fxcm
-from fxcmTest import FxcmTest
+from FxcmBacktest import FxcmBacktest
 from algorithm import Algorithm
 
 
 class Bot():
     fxcm = None
     algo = None
-    config: None
+    config = None
 
     def __init__(self, config, con=None):
-        if config['test_mode'] == 'false':
+        if config['backtest'] == 'false':
             self.fxcm = Fxcm(config, con)
         else:
-            self.fxcm = FxcmTest(config, con)
+            self.fxcm = FxcmBacktest(config, con)
         self.algo = Algorithm(self.fxcm, config)
         self.config = config
 
@@ -27,10 +27,7 @@ class Bot():
             nextCandle = self.fxcm.getNextCandle()
             if not nextCandle:
                 break
-            self.algo.runNextInstance(nextCandle[0], nextCandle[1])
-
-    def end(self, sig, frame):
-        self.isRunning = False
+            self.algo.nextTick(nextCandle[0], nextCandle[1])
 
 
 def mainDev(con, argv):
