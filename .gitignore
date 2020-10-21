@@ -133,3 +133,6 @@ dmypy.json
 
 # FXCM log
 log.txt
+
+# Config files
+/config

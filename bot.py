@@ -1,12 +1,8 @@
-import sys
-import datetime as dt
-import pandas as pd
-from time import sleep
-
-from utils import dateDiffInMillisecond, parseConfigFile
 from fxcm import Fxcm
 from FxcmBacktest import FxcmBacktest
 from algorithm import Algorithm
+import sys
+import utils
 
 
 class Bot():
@@ -24,14 +20,14 @@ class Bot():
 
     def run(self):
         while True:
-            nextCandle = self.fxcm.getNextCandle()
-            if not nextCandle:
+            (newCandle, allCandles) = self.fxcm.getNewCandle()
+            self.algo.nextTick(newCandle, allCandles)
+            if newCandle.empty:
                 break
-            self.algo.nextTick(nextCandle[0], nextCandle[1])
 
 
 def mainDev(con, argv):
-    config = parseConfigFile(argv)
+    config = utils.parseConfigFile(argv)
     if not config:
         return
 
@@ -41,7 +37,7 @@ def mainDev(con, argv):
 
 
 def main(argv):
-    config = parseConfigFile(argv)
+    config = utils.parseConfigFile(argv)
     if not config:
         return
 

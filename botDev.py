@@ -1,6 +1,6 @@
-import sys
 from dev.Session import Session
 from dev.Loader import Loader
+import sys
 
 
 def main():

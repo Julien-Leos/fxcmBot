@@ -1,6 +1,7 @@
 import configparser
 import pandas as pd
 
+
 def displayDataFrame(dataFrame):
     """Display a panda's dataFrame object.
 

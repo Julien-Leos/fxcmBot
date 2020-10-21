@@ -1,10 +1,9 @@
 import fxcmpy
 import signal
+from time import sleep
 import datetime as dt
 import pandas as pd
-
-from time import sleep
-from utils import *
+import utils
 
 
 class FxcmBacktest():
@@ -81,6 +80,23 @@ class FxcmBacktest():
         """
         return self.__con.get_candles(self.__forexPair, period=period, number=number, start=start, end=end, columns=columns)
 
+    def getNewCandle(self):
+        # End bot when there is no leftover candles
+        if self.__leftCandles.empty:
+            return (pd.Series(), self.__candles)
+
+        # Get nextCandle and remove nextCandle from leftover candles
+        nextCandle = self.__leftCandles.iloc[0]
+        self.__candles = self.__candles.append(nextCandle)
+        self.__leftCandles = self.__leftCandles.iloc[1:]
+
+        # Update all positions with new Candle
+        for position in self.__openPositions:
+            position.update(nextCandle)
+        self.__updateAccountInfo()
+
+        return (nextCandle, self.__candles)
+
     def buy(self, amount, limit=None, stop=None):
         return self.__openPosition(True, amount, limit, stop)
 
@@ -137,7 +153,7 @@ class FxcmBacktest():
         Args:
             positionId (int): Id of the position
         """
-        position = self.getPosition(positionId)
+        position = self.getOpenPosition(positionId)
 
         self.__account['balance'] += position.get_grossPL()
         self.__account['usdMr'] -= position.get_usedMargin()
@@ -159,27 +175,11 @@ class FxcmBacktest():
         self.__account['usableMargin'] = self.__account['equity'] - \
             self.__account['usdMr']
 
-    def __getNextCandle(self):
-        # End bot when there is no leftover candles
-        if self.__leftCandles.empty:
-            return None
-
-        # Get nextCandle and remove nextCandle from leftover candles
-        nextCandle = self.__leftCandles.iloc[0]
-        self.__candles = self.__candles.append(nextCandle)
-        self.__leftCandles = self.__leftCandles.iloc[1:]
-
-        # Update all positions with new Candle
-        for position in self.__openPositions:
-            position.update(nextCandle)
-        self.__updateAccountInfo()
-
-        return (nextCandle, self.__candles)
-
     def __openPosition(self, isBuy, amount, limit, stop):
         lastCandle = self.__getLastCandle()
+        newTradeId = len(self.__openPositions) + len(self.__closePositions)
         newPosition = FxcmBacktestOpenPosition(
-            self.__con, lastCandle, len(self.__openPositions), self.__forexPair, isBuy, amount, limit, stop)
+            self.__con, lastCandle, newTradeId, self.__forexPair, isBuy, amount, limit, stop)
 
         self.__account['usdMr'] += newPosition.get_usedMargin()
         if self.__account['equity'] - self.__account['usdMr'] < 0:

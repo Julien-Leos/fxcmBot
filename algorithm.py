@@ -12,37 +12,36 @@ class Algorithm():
         self.fxcm = fxcm
         self.config = config
 
-    def isLastTick(self, date):
-        endDate = datetime.strptime(self.config['end_date'], '%Y/%m/%d %H:%M')
-        currentDate = date.to_pydatetime()
-        return currentDate == endDate
-
     def nextTick(self, newCandle, allCandles):  # Tick
         if (len(allCandles) == 1):  # Is first Tick
             accountInfo = self.fxcm.getAccountInfo()
             print("DEBUG: Start Account Equity:", accountInfo['equity'])
-        if (self.isLastTick(newCandle.name)):  # Is last Tick
-            self.lastTick(newCandle, allCandles)
+        if newCandle.empty:  # Is last Tick
+            self.lastTick(allCandles)
             return
 
-        if len(self.fxcm.getPositions('list')) == 0:
+
+        if len(self.fxcm.getOpenPositions('list')) == 0:
             self.positionId = self.fxcm.buy(1)
             print("Buy position %s" % self.positionId)
-        elif not self.positionId:
+        elif self.positionId == None:
             # Close positions (only in) realtime where positions could be opened on the external service
             self.fxcm.closePositions()
+            print("Close all positions")
+            return
 
-        grossPL = self.fxcm.getPosition(self.positionId).get_grossPL()
+
+        grossPL = self.fxcm.getOpenPosition(self.positionId).get_grossPL()
         print("DEBUG: Position GrossPL:", grossPL)
-        if grossPL > 0.15:
+        if grossPL > 0.1:
             self.fxcm.closePosition(self.positionId)
             print("Close position %s" % self.positionId)
 
+    def lastTick(self, allCandles):
+        self.fxcm.closePositions()
 
-    def lastTick(self, newCandle, allCandles):
-        position = self.fxcm.getPosition(self.positionId)
-        if position and self.fxcm.closePosition(self.positionId):
-            print("Close position %s" % self.positionId)
+        closedPositions = self.fxcm.getClosePositions('list')
+        print(closedPositions)
 
         accountInfo = self.fxcm.getAccountInfo()
         Graph.setTitle("Final Account Equity: {}".format(

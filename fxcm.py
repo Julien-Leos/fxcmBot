@@ -1,36 +1,35 @@
 import fxcmpy
 import signal
+from time import sleep
 import datetime as dt
 import pandas as pd
-
-from time import sleep
-from utils import *
+import utils
 
 
 class Fxcm():
-    con = None
+    __con = None
 
-    forexPair = 'EUR/USD'
-    config = None
-    isRunning = True
+    __forexPair = 'EUR/USD'
+    __config = None
+    __isRunning = True
 
-    candles = None
+    __candles = None
 
     def __init__(self, config, con):
         if config['devEnv'] == False:
-            self.con = fxcmpy.fxcmpy(config_file='config/fxcm.cfg')
+            self.__con = fxcmpy.fxcmpy(config_file='config/fxcm.cfg')
         else:
-            self.con = con
+            self.__con = con
 
-        self.config = config
+        self.__config = config
         candleColumns = self.getCandles(config['period'], number=1).columns
-        self.candles = pd.DataFrame(columns=candleColumns)
+        self.__candles = pd.DataFrame(columns=candleColumns)
 
         # End bot when Trigger Crtl-C
         signal.signal(signal.SIGINT, self.__end)
 
     def getAccountInfo(self):
-        return self.con.get_accounts('list')[0]
+        return self.__con.get_accounts('list')[0]
 
     def setForexPair(self, newForexPair):
         """Set a new pair of Forex to work with
@@ -38,7 +37,7 @@ class Fxcm():
         Args:
             newForexPair (str): New pair of Forex
         """
-        self.forexPair = newForexPair
+        self.__forexPair = newForexPair
 
     def getForexPair(self):
         """Get the actual pair of Forex
@@ -46,7 +45,7 @@ class Fxcm():
         Returns:
             str: Actual pair of Forex
         """
-        return self.forexPair
+        return self.__forexPair
 
     def getCandles(self, period, number=10, start=None, end=None, columns=[]):
         """Return historical market data from the fxcm database
@@ -61,7 +60,29 @@ class Fxcm():
         Returns:
             DataFrame: Requested data
         """
-        return self.con.get_candles(self.forexPair, period=period, number=number, start=start, end=end, columns=columns)
+        return self.__con.get_candles(self.__forexPair, period=period, number=number, start=start, end=end, columns=columns)
+
+    def getNewCandle(self):
+        while self.__isRunning:
+            nextCandle = self.getCandles(
+                self.__config['period'], number=1).iloc[0]
+
+            # End bot when end_date is reached
+            if nextCandle.name >= dt.datetime.strptime(self.__config['end_date'], "%Y/%m/%d %H:%M"):
+                print("Bot 'end_date' reached.\nEnding Bot...")
+                break
+
+            # Return next candle if not the same as previous candle
+            if self.__candles.empty or not utils.isDiffCandle(nextCandle, self.__candles.iloc[-1]):
+                self.__candles = self.__candles.append(nextCandle)
+                return (nextCandle, self.__candles)
+
+            # Display prompt and sleep 1 second
+            print("# Algorithm's last run at %s" %
+                  nextCandle.name, end="\r")
+            print("\033[A")
+            sleep(1)
+        return (pd.Series(), self.__candles)
 
     def buy(self, amount, limit=None, stop=None):
         """Open a buy position for the current Forex pair.
@@ -74,8 +95,8 @@ class Fxcm():
         Returns:
             positionId: Id of the position opened
         """
-        order = self.con.open_trade(symbol=self.forexPair, is_buy=True, amount=amount,
-                                    order_type="AtMarket", time_in_force="GTC", limit=limit, stop=stop)
+        order = self.__con.open_trade(symbol=self.__forexPair, is_buy=True, amount=amount,
+                                      order_type="AtMarket", time_in_force="GTC", limit=limit, stop=stop)
         sleep(10)  # Sleep so the order can became an opened position
 
         if order:
@@ -93,8 +114,8 @@ class Fxcm():
         Returns:
             positionId: Id of the position opened
         """
-        order = self.con.open_trade(symbol=self.forexPair, is_buy=False, amount=amount,
-                                    order_type="AtMarket", time_in_force="GTC", limit=limit, stop=stop)
+        order = self.__con.open_trade(symbol=self.__forexPair, is_buy=False, amount=amount,
+                                      order_type="AtMarket", time_in_force="GTC", limit=limit, stop=stop)
         sleep(10)  # Sleep so the order can became an opened position
 
         if order:
@@ -107,7 +128,7 @@ class Fxcm():
         Args:
             kind (str, optional): How to return the data. Possible values are: 'dataframe' or 'list'. Defaults to "dataframe"".
         """
-        return self.con.get_open_positions(kind)
+        return self.__con.get_open_positions(kind)
 
     def getOpenPosition(self, positionId):
         """Get an opened position by his Id
@@ -116,7 +137,7 @@ class Fxcm():
             positionId (int): Id of the position
         """
         try:
-            return self.con.get_open_position(positionId)
+            return self.__con.get_open_position(positionId)
         except:
             return None
 
@@ -126,7 +147,7 @@ class Fxcm():
         Args:
             kind (str, optional): How to return the data. Possible values are: 'dataframe' or 'list'. Defaults to "dataframe"".
         """
-        return self.con.get_closed_positions(kind)
+        return self.__con.get_closed_positions(kind)
 
     def getClosePosition(self, positionId):
         """Get a closed position by his Id
@@ -135,12 +156,12 @@ class Fxcm():
             positionId (int): Id of the position
         """
         try:
-            return self.con.get_closed_position(positionId)
+            return self.__con.get_closed_position(positionId)
         except:
             return None
 
     def closePositions(self):
-        self.con.close_all()
+        self.__con.close_all()
 
     def closePosition(self, positionId):
         """Close a position by his Id
@@ -157,26 +178,4 @@ class Fxcm():
 
     def __end(self, sig, frame):
         print("\nEnding Bot...")
-        self.isRunning = False
-
-    def __getNextCandle(self):
-        while self.isRunning:
-            nextCandle = self.getCandles(
-                self.config['period'], number=1).iloc[0]
-
-            # End bot when end_date is reached
-            if nextCandle.name >= dt.datetime.strptime(self.config['end_date'], "%Y/%m/%d %H:%M"):
-                print("Bot 'end_date' reached.\nEnding Bot...")
-                break
-
-            # Return next candle if not the same as previous candle
-            if self.candles.empty or not isDiffCandle(nextCandle, self.candles.iloc[-1]):
-                self.candles = self.candles.append(nextCandle)
-                return (nextCandle, self.candles)
-
-            # Display prompt and sleep 1 second
-            print("# Algorithm's last run at %s" %
-                  nextCandle.name, end="\r")
-            print("\033[A")
-            sleep(1)
-        return None
+        self.__isRunning = False
