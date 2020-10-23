@@ -1,5 +1,6 @@
 from graph import Graph
 from datetime import datetime
+from time import sleep
 
 
 class Algorithm():
@@ -17,12 +18,13 @@ class Algorithm():
             accountInfo = self.fxcm.getAccountInfo()
             print("DEBUG: Start Account Equity:", accountInfo['equity'])
         if newCandle.empty:  # Is last Tick
+            accountInfo = self.fxcm.getAccountInfo()
+            print("DEBUG: End Account Equity:", accountInfo['equity'])
             self.lastTick(allCandles)
             return
 
-
         if len(self.fxcm.getOpenPositions('list')) == 0:
-            self.positionId = self.fxcm.buy(1)
+            self.positionId = self.fxcm.buy(1, limit=2, stop=-1)
             print("Buy position %s" % self.positionId)
         elif self.positionId == None:
             # Close positions (only in) realtime where positions could be opened on the external service
@@ -30,12 +32,8 @@ class Algorithm():
             print("Close all positions")
             return
 
-
-        grossPL = self.fxcm.getOpenPosition(self.positionId).get_grossPL()
-        print("DEBUG: Position GrossPL:", grossPL)
-        if grossPL > 0.1:
-            self.fxcm.closePosition(self.positionId)
-            print("Close position %s" % self.positionId)
+        # grossPL = self.fxcm.getOpenPosition(self.positionId).get_grossPL()
+        # print("DEBUG: Position GrossPL:", grossPL)
 
     def lastTick(self, allCandles):
         self.fxcm.closePositions()

@@ -99,7 +99,7 @@ class Fxcm():
                                       order_type="AtMarket", time_in_force="GTC", limit=limit, stop=stop)
         sleep(10)  # Sleep so the order can became an opened position
 
-        if order:
+        if order != None:
             return order.get_tradeId()
         return None
 
@@ -118,7 +118,7 @@ class Fxcm():
                                       order_type="AtMarket", time_in_force="GTC", limit=limit, stop=stop)
         sleep(10)  # Sleep so the order can became an opened position
 
-        if order:
+        if order != None:
             return order.get_tradeId()
         return None
 

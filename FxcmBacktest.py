@@ -4,10 +4,10 @@ from time import sleep
 import datetime as dt
 import pandas as pd
 import utils
+import const
 
 
 class FxcmBacktest():
-    START_AMOUNT = 50000
 
     __con = None
 
@@ -15,9 +15,9 @@ class FxcmBacktest():
     __config = None
 
     __account = dict({
-        'balance': START_AMOUNT,
-        'equity': START_AMOUNT,
-        'usableMargin': START_AMOUNT,
+        'balance': const.START_AMOUNT,
+        'equity': const.START_AMOUNT,
+        'usableMargin': const.START_AMOUNT,
         'usdMr': 0,
         'grossPL': 0
     })
@@ -162,6 +162,9 @@ class FxcmBacktest():
         self.__updateAccountInfo()
         return True
 
+    def getCon(self):
+        return self.__con
+
     def __end(self, sig, frame):
         print("\nEnding Bot...")
         self.__leftCandles = self.__leftCandles[0:0]
@@ -177,14 +180,18 @@ class FxcmBacktest():
 
     def __openPosition(self, isBuy, amount, limit, stop):
         lastCandle = self.__getLastCandle()
+
+        if not utils.checkLimitStopViability(limit, stop):
+            print("ERROR: Can't open position: Limit or Stop value is incorrect")
+            return None
+
         newTradeId = len(self.__openPositions) + len(self.__closePositions)
         newPosition = FxcmBacktestOpenPosition(
-            self.__con, lastCandle, newTradeId, self.__forexPair, isBuy, amount, limit, stop)
+            self, lastCandle, newTradeId, self.__forexPair, isBuy, amount, limit, stop)
 
         self.__account['usdMr'] += newPosition.get_usedMargin()
         if self.__account['equity'] - self.__account['usdMr'] < 0:
-            print("Bot: Can't open position %s: Not enough usable margin." %
-                  newPosition.get_tradeId())
+            print("ERROR: Can't open position: Not enough usable margin.")
             return None
 
         self.__openPositions.append(newPosition)
@@ -197,45 +204,52 @@ class FxcmBacktest():
 
 
 class FxcmBacktestOpenPosition():
-    LOT_SIZE = 10000
-    ACCOUNT_CURRENCY = 'EUR'
-    MMR = 16.65
-
-    __con = None
+    __fxcm = None
     __position = None
 
-    def __init__(self, con, lastCandle, tradeId, forexPair, isBuy, amount, limit, stop):
-        self.__con = con
+    def __init__(self, fxcm, lastCandle, tradeId, forexPair, isBuy, amount, limit, stop):
+        self.__fxcm = fxcm
 
         self.__position = pd.Series({
             'tradeId': tradeId,
             'currency': forexPair,
-            'currencyPoint': self.__getPipCost(forexPair, lastCandle.name),
+            'currencyPoint': utils.getPipCost(forexPair, lastCandle.name, self.__fxcm.getCon()),
             'isBuy': isBuy,
             'amountK': amount,
             'time': lastCandle.name,
-            'limit': limit or 0,
-            'stop': stop or 0,
-            'open': lastCandle['askclose'] if isBuy else lastCandle['bidclose'],
+            'limit': 0,
+            'stop': 0,
+            'open': utils.getOpenPrice(isBuy, lastCandle),
             'close': 0,
             'grossPL': 0,
             'visiblePL': 0,
             # I don't know how to compute MMR (16.65 is commonly used but not always)
-            'usedMargin': self.MMR
+            'usedMargin': const.MMR
         })
-        self.update(lastCandle)
+
+        # Define limit and stop value from pips
+        self.__position['limit'] = utils.getLimit(
+            isBuy, limit, self.__position['open']) if limit else 0
+        self.__position['stop'] = utils.getStop(
+            isBuy, stop, self.__position['open'], utils.getSpread(lastCandle)) if stop else 0
+
+        self.__updatePrices(lastCandle)
 
     def update(self, lastCandle):
-        if self.__position['isBuy'] == True:
-            self.__position['close'] = lastCandle['bidclose']
-            self.__position['grossPL'] = (self.__position['close'] -
-                                          self.__position['open']) * self.LOT_SIZE
-        else:
-            self.__position['close'] = lastCandle['askclose']
-            self.__position['grossPL'] = (
-                self.__position['open'] - self.__position['close']) * self.LOT_SIZE
-        self.__position['visiblePL'] = self.__position['grossPL'] * \
-            self.__position['currencyPoint']
+        self.__updatePrices(lastCandle)
+
+        # Check limit and stop loss
+        if utils.checkLimitStop(self.__position['isBuy'], self.__position['limit'], self.__position['stop'], self.__position['close']):
+            self.__fxcm.closePosition(self.__position['tradeId'])
+
+    def __updatePrices(self, lastCandle):
+        # Update Position prices
+        self.__position['close'] = utils.getClosePrice(
+            self.__position['isBuy'], lastCandle)
+        self.__position['visiblePL'] = utils.getPL(
+            self.__position['isBuy'], self.__position['amountK'], self.__position['open'], self.__position['close'])
+        self.__position['grossPL'] = (
+            self.__position['visiblePL'] * self.__position['currencyPoint'])
 
     def get_position(self):
         return self.__position
@@ -278,23 +292,6 @@ class FxcmBacktestOpenPosition():
 
     def get_usedMargin(self):
         return self.__position['usedMargin']
-
-    def __getPipCost(self, forexPair, date):
-        if forexPair.find('JPY') == -1:
-            multiplier = 0.0001
-        else:
-            multiplier = 0.01
-
-        forexPairExchange = self.__con.get_candles(
-            forexPair, period='m1', number=1, start=date, end=date, columns=["askopen"])
-        if forexPairExchange.size == 0:
-            return self.__getPipCost(forexPair, date - dt.timedelta(minutes=1))
-        forexPairExchangeValue = forexPairExchange['askopen'].iloc[0]
-        if forexPair.find(self.ACCOUNT_CURRENCY) != -1:
-            return multiplier / forexPairExchangeValue * (self.LOT_SIZE / 10)
-        else:
-            forexPairSecond = forexPair.split('/')[1]
-            return self.__getPipCost(self.ACCOUNT_CURRENCY + '/' + forexPairSecond)
 
 
 class FxcmBacktestClosePosition():
