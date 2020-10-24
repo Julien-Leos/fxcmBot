@@ -41,7 +41,7 @@ class Algorithm():
         if self.isFirstTick(allCandles):
             self.firstTick(newCandle, allCandles)
         elif self.isLastTick(newCandle):
-            self.lastTick([allCandles])
+            self.lastTick([self.m5Candles])
             return
 
         lastm5CandleSize = self.m5Candles.shape[0]
@@ -65,7 +65,7 @@ class Algorithm():
             print("TREND CHANGE")
             self.askBbTrending = newAskBbTrending
             Graph.addAction(
-                newCandle.name, askbb['mid'], 0, 'TRENDING' if newAskBbTrending else 'TRENDLESS', True if newAskBbTrending else False)
+                newCandle.name, askbb['mid'], 0, 'TRENDING' if newAskBbTrending else 'TRENDLESS', True if newAskBbTrending else False, True)
 
     def isFirstTick(self, allCandles):
         if len(allCandles) == 1:
@@ -99,13 +99,14 @@ class Algorithm():
                 close=allCandlesPeriod['askclose'],
                 name='Ask Candles ' + str(period))
 
-            # Graph.addCandleSticks(
-            #     x=allCandlesPeriod.index.to_pydatetime(),
-            #     open=allCandlesPeriod['bidopen'],
-            #     high=allCandlesPeriod['bidhigh'],
-            #     low=allCandlesPeriod['bidlow'],
-            #     close=allCandlesPeriod['bidclose'],
-            #     name='Ask Candles ' + str(period))
+            Graph.addCandleSticks(
+                x=allCandlesPeriod.index.to_pydatetime(),
+                open=allCandlesPeriod['bidopen'],
+                high=allCandlesPeriod['bidhigh'],
+                low=allCandlesPeriod['bidlow'],
+                close=allCandlesPeriod['bidclose'],
+                name='Ask Candles ' + str(period),
+                plot=2)
 
             Graph.addIndicator(
                 x=allCandlesPeriod.index.to_pydatetime(),
@@ -128,25 +129,125 @@ class Algorithm():
                 color="rgba(0, 0, 180, 0.4)"
             )
 
-            # Graph.addIndicator(
-            #     x=allCandlesPeriod.index.to_pydatetime(),
-            #     y=Indicator.bbup(allCandlesPeriod['bidclose'], 20),
-            #     name='Bid BBup' + str(period),
-            #     color="rgba(0, 0, 255, 0.6)"
-            # )
+            Graph.addIndicator(
+                x=allCandlesPeriod.index.to_pydatetime(),
+                y=Indicator.bbup(allCandlesPeriod['bidclose'], 20),
+                name='Bid BBup' + str(period),
+                color="rgba(0, 0, 255, 0.6)",
+                plot=2
+            )
 
-            # Graph.addIndicator(
-            #     x=allCandlesPeriod.index.to_pydatetime(),
-            #     y=Indicator.bbmid(allCandlesPeriod['bidclose'], 20),
-            #     name='Bid BBmid' + str(period),
-            #     color="rgba(0, 0, 200, 0.5)"
-            # )
+            Graph.addIndicator(
+                x=allCandlesPeriod.index.to_pydatetime(),
+                y=Indicator.bbmid(allCandlesPeriod['bidclose'], 20),
+                name='Bid BBmid' + str(period),
+                color="rgba(0, 0, 200, 0.5)",
+                plot=2
+            )
 
-            # Graph.addIndicator(
-            #     x=allCandlesPeriod.index.to_pydatetime(),
-            #     y=Indicator.bblow(allCandlesPeriod['bidclose'], 20),
-            #     name='Bid BBlow' + str(period),
-            #     color="rgba(0, 0, 180, 0.4)"
-            # )
+            Graph.addIndicator(
+                x=allCandlesPeriod.index.to_pydatetime(),
+                y=Indicator.bblow(allCandlesPeriod['bidclose'], 20),
+                name='Bid BBlow' + str(period),
+                color="rgba(0, 0, 180, 0.4)",
+                plot=2
+            )
 
-        Graph.render()
+            Graph.render()
+
+        # print("DEBUG: Final Account Equity:", accountInfo['equity'])
+
+        # # Buy Plot
+        # Graph.addCandleSticks(
+        #     x=allCandles.index.to_pydatetime(),
+        #     open=allCandles['askopen'],
+        #     high=allCandles['askhigh'],
+        #     low=allCandles['asklow'],
+        #     close=allCandles['askclose'],
+        #     name='Ask Market Candles')
+
+        # Graph.addIndicator(
+        #     x=allCandles.index.to_pydatetime(),
+        #     y=Indicator.ema(allCandles['askclose'], 20),
+        #     name='EMA 20',
+        #     color="rgba(0, 180, 0, 0.6)"
+        # )
+
+        # Graph.addIndicator(
+        #     x=allCandles.index.to_pydatetime(),
+        #     y=Indicator.ema(allCandles['askclose'], 100),
+        #     name='EMA 100',
+        #     color="rgba(0, 200, 0, 0.4)"
+        # )
+
+        # Graph.addIndicator(
+        #     x=allCandles.index.to_pydatetime(),
+        #     y=Indicator.bbup(allCandles['askclose'], 20),
+        #     name='BBup',
+        #     color="rgba(0, 0, 255, 0.6)"
+        # )
+
+        # Graph.addIndicator(
+        #     x=allCandles.index.to_pydatetime(),
+        #     y=Indicator.bbmid(allCandles['askclose'], 20),
+        #     name='BBmid',
+        #     color="rgba(0, 0, 200, 0.5)"
+        # )
+
+        # Graph.addIndicator(
+        #     x=allCandles.index.to_pydatetime(),
+        #     y=Indicator.bblow(allCandles['askclose'], 20),
+        #     name='BBlow',
+        #     color="rgba(0, 0, 180, 0.4)"
+        # )
+
+        # # Sell Plot
+        # Graph.addCandleSticks(
+        #     x=allCandles.index.to_pydatetime(),
+        #     open=allCandles['bidopen'],
+        #     high=allCandles['bidhigh'],
+        #     low=allCandles['bidlow'],
+        #     close=allCandles['bidclose'],
+        #     name='Bid Market Candles',
+        #     plot=2)
+
+        # Graph.addIndicator(
+        #     x=allCandles.index.to_pydatetime(),
+        #     y=Indicator.ema(allCandles['bidclose'], 20),
+        #     name='EMA 20',
+        #     color="rgba(0, 180, 0, 0.6)",
+        #     plot=2
+        # )
+
+        # Graph.addIndicator(
+        #     x=allCandles.index.to_pydatetime(),
+        #     y=Indicator.ema(allCandles['bidclose'], 100),
+        #     name='EMA 100',
+        #     color="rgba(0, 200, 0, 0.4)",
+        #     plot=2
+        # )
+
+        # Graph.addIndicator(
+        #     x=allCandles.index.to_pydatetime(),
+        #     y=Indicator.bbup(allCandles['bidclose'], 20),
+        #     name='BBup',
+        #     color="rgba(0, 0, 255, 0.6)",
+        #     plot=2
+        # )
+
+        # Graph.addIndicator(
+        #     x=allCandles.index.to_pydatetime(),
+        #     y=Indicator.bbmid(allCandles['bidclose'], 20),
+        #     name='BBmid',
+        #     color="rgba(0, 0, 200, 0.5)",
+        #     plot=2
+        # )
+
+        # Graph.addIndicator(
+        #     x=allCandles.index.to_pydatetime(),
+        #     y=Indicator.bblow(allCandles['bidclose'], 20),
+        #     name='BBlow',
+        #     color="rgba(0, 0, 180, 0.4)",
+        #     plot=2
+        # )
+        # Graph.render()
