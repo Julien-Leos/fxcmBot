@@ -11,4 +11,5 @@ def ptdrCFermeLeWeekend():
     data['askclose'] = data['bidclose'].map(lambda x: x + 0.00013)
     datetime_series = pd.to_datetime(data['date'])
     datetime_index = pd.DatetimeIndex(datetime_series.values)
+    data = data.drop('date', 'columns')
     return data.set_index(datetime_index)
