@@ -24,7 +24,7 @@ class Algorithm():
             return
 
         if len(self.fxcm.getOpenPositions('list')) == 0:
-            self.positionId = self.fxcm.buy(1, limit=2, stop=-1)
+            self.positionId = self.fxcm.buy(1, limit=2, stop=-10)
             print("Buy position %s" % self.positionId)
         elif self.positionId == None:
             # Close positions (only in) realtime where positions could be opened on the external service
@@ -38,8 +38,8 @@ class Algorithm():
     def lastTick(self, allCandles):
         self.fxcm.closePositions()
 
-        closedPositions = self.fxcm.getClosePositions('list')
-        print(closedPositions)
+        # closedPositions = self.fxcm.getClosePositions('list')
+        # print(closedPositions)
 
         accountInfo = self.fxcm.getAccountInfo()
         Graph.setTitle("Final Account Equity: {}".format(

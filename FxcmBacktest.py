@@ -1,4 +1,5 @@
-import fxcmpy
+# import fxcmpy
+from convertisseur import ptdrCFermeLeWeekend
 import signal
 from time import sleep
 import datetime as dt
@@ -29,7 +30,8 @@ class FxcmBacktest():
 
     def __init__(self, config, con):
         if config['devEnv'] == False:
-            self.__con = fxcmpy.fxcmpy(config_file='config/fxcm.cfg')
+            # self.__con = fxcmpy.fxcmpy(config_file='config/fxcm.cfg')
+            self.__con = None
         else:
             self.__con = con
 
@@ -39,8 +41,9 @@ class FxcmBacktest():
             config['end_date'], "%Y/%m/%d %H:%M")
 
         self.__config = config
-        self.__leftCandles = self.getCandles(
-            config['period'], start=startDate, end=endDate)
+        # self.__leftCandles = self.getCandles(
+        #     config['period'], start=startDate, end=endDate)
+        self.__leftCandles = ptdrCFermeLeWeekend()
         self.__candles = pd.DataFrame(columns=self.__leftCandles.columns)
 
         # End bot when Trigger Crtl-C
@@ -213,7 +216,8 @@ class FxcmBacktestOpenPosition():
         self.__position = pd.Series({
             'tradeId': tradeId,
             'currency': forexPair,
-            'currencyPoint': utils.getPipCost(forexPair, lastCandle.name, self.__fxcm.getCon()),
+            # 'currencyPoint': utils.getPipCost(forexPair, lastCandle.name, self.__fxcm.getCon()),
+            'currencyPoint': 0.08,
             'isBuy': isBuy,
             'amountK': amount,
             'time': lastCandle.name,
