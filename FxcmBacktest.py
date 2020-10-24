@@ -1,4 +1,5 @@
 # import fxcmpy
+from graph import Graph
 from convertisseur import ptdrCFermeLeWeekend
 import signal
 from time import sleep
@@ -157,12 +158,12 @@ class FxcmBacktest():
             positionId (int): Id of the position
         """
         position = self.getOpenPosition(positionId)
-
         self.__account['balance'] += position.get_grossPL()
         self.__account['usdMr'] -= position.get_usedMargin()
         self.__openPositions.remove(position)
         self.__closePositions.append(FxcmBacktestClosePosition(position))
         self.__updateAccountInfo()
+        Graph.addAction(self.__getLastCandle().name, position.get_close(), positionId, 'Close', position.get_isBuy())
         return True
 
     def getCon(self):
@@ -197,6 +198,7 @@ class FxcmBacktest():
             print("ERROR: Can't open position: Not enough usable margin.")
             return None
 
+        Graph.addAction(lastCandle.name, newPosition.get_open(), newTradeId, 'Open', newPosition.get_isBuy())
         self.__openPositions.append(newPosition)
         return newPosition.get_tradeId()
 

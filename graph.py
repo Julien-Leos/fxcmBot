@@ -7,6 +7,9 @@ class Graph():
     __instance = None
     figure = None
 
+    buyColor = 'rgba(210, 0, 0, 1)'
+    sellColor = 'rgba(0, 0, 210, 1)'
+
     @staticmethod
     def getInstance():
         if Graph.__instance == None:
@@ -23,7 +26,15 @@ class Graph():
     def render():
         self = Graph.getInstance()
         self.figure.show()
-        self.figure = go.Figure() # Reset graph when rendering.
+        self.figure = go.Figure()  # Reset graph when rendering.
+
+    @staticmethod
+    def setTitle(title):
+        self = Graph.getInstance()
+        self.figure.update_layout(
+            title=go.layout.Title(text=title),
+            title_font_size=20
+        )
 
     @staticmethod
     def addCandleSticks(x, open, high, low, close, name):
@@ -52,9 +63,24 @@ class Graph():
         )
 
     @staticmethod
-    def setTitle(title):
+    def addAction(x, y, name, action, isBuy):
         self = Graph.getInstance()
-        self.figure.update_layout(
-            title=go.layout.Title(text=title),
-            title_font_size=20
-        )
+        color = self.buyColor if isBuy else self.sellColor
+        self.figure.add_annotation(x=x,
+                                   y=y,
+                                   text="{} #{}".format(action, name),
+                                   showarrow=True,
+                                   align="center",
+                                   arrowhead=2,
+                                   arrowsize=1,
+                                   arrowwidth=2,
+                                   arrowcolor=color,
+                                   bordercolor="#c7c7c7",
+                                   borderwidth=2,
+                                   borderpad=2,
+                                   bgcolor=color,
+                                   font=dict(
+                                       size=16,
+                                       color="#ffffff"
+                                   ),
+                                   opacity=1)

@@ -5,6 +5,10 @@ from pyti.bollinger_bands import lower_bollinger_band as bblow
 
 class Indicator():
 
+    # Example:
+    # Data = [6, 7, 3, 6, 3, 9, 5]
+    # Period = 2
+
     @staticmethod
     def ema(data, period):
         return ema(data, period)

@@ -55,6 +55,14 @@ class Algorithm():
             close=allCandles['askclose'],
             name='Market Candles')
 
+        Graph.addCandleSticks(
+            x=allCandles.index.to_pydatetime(),
+            open=allCandles['bidopen'],
+            high=allCandles['bidhigh'],
+            low=allCandles['bidlow'],
+            close=allCandles['bidclose'],
+            name='Bid Market Candles')
+
         Graph.addIndicator(
             x=allCandles.index.to_pydatetime(),
             y=Indicator.ema(allCandles['askclose'], 20),
