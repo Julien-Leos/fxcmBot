@@ -1,6 +1,7 @@
 from graph import Graph
 from datetime import datetime
 from time import sleep
+from indicator import Indicator
 
 
 class Algorithm():
@@ -54,11 +55,39 @@ class Algorithm():
             close=allCandles['askclose'],
             name='Market Candles')
 
-        # Graph.addIndicator(
-        #     x=allCandles.index.to_pydatetime(),
-        #     y=allCandles['askhigh'],
-        #     name='Example Indicator',
-        #     color="#0000ff"
-        # )
+        Graph.addIndicator(
+            x=allCandles.index.to_pydatetime(),
+            y=Indicator.ema(allCandles['askclose'], 20),
+            name='EMA 20',
+            color="rgba(0, 180, 0, 0.6)"
+        )
+
+        Graph.addIndicator(
+            x=allCandles.index.to_pydatetime(),
+            y=Indicator.ema(allCandles['askclose'], 100),
+            name='EMA 100',
+            color="rgba(0, 200, 0, 0.4)"
+        )
+
+        Graph.addIndicator(
+            x=allCandles.index.to_pydatetime(),
+            y=Indicator.bbup(allCandles['askclose'], 20),
+            name='BBup',
+            color="rgba(0, 0, 255, 0.6)"
+        )
+
+        Graph.addIndicator(
+            x=allCandles.index.to_pydatetime(),
+            y=Indicator.bbmid(allCandles['askclose'], 20),
+            name='BBmid',
+            color="rgba(0, 0, 200, 0.5)"
+        )
+
+        Graph.addIndicator(
+            x=allCandles.index.to_pydatetime(),
+            y=Indicator.bblow(allCandles['askclose'], 20),
+            name='BBlow',
+            color="rgba(0, 0, 180, 0.4)"
+        )
 
         Graph.render()
