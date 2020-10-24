@@ -1,4 +1,5 @@
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import datetime as dt
 import pandas as pd
 
@@ -20,24 +21,28 @@ class Graph():
         if Graph.__instance != None:
             raise Exception("This class is a singleton!")
         Graph.__instance = self
-        self.figure = go.Figure()
+        self.figure = make_subplots(
+            rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.01)
 
     @staticmethod
     def render():
         self = Graph.getInstance()
         self.figure.show()
-        self.figure = go.Figure()  # Reset graph when rendering.
+        # Reset graph when rendering.
+        self.figure = make_subplots(
+            rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.01)
 
     @staticmethod
     def setTitle(title):
         self = Graph.getInstance()
         self.figure.update_layout(
             title=go.layout.Title(text=title),
-            title_font_size=20
+            title_font_size=16
         )
+        self.figure.update_xaxes(rangeslider_visible=False)
 
     @staticmethod
-    def addCandleSticks(x, open, high, low, close, name):
+    def addCandleSticks(x, open, high, low, close, name, plot=1):
         self = Graph.getInstance()
         self.figure.add_trace(
             go.Candlestick(
@@ -47,11 +52,11 @@ class Graph():
                 low=low,
                 close=close,
                 name=name
-            )
+            ), row=plot, col=1
         )
 
     @staticmethod
-    def addIndicator(x, y, name, color):
+    def addIndicator(x, y, name, color, plot=1):
         self = Graph.getInstance()
         self.figure.add_trace(
             go.Scatter(
@@ -59,7 +64,7 @@ class Graph():
                 y=y,
                 name=name,
                 line_color=color
-            )
+            ), row=plot, col=1
         )
 
     @staticmethod
@@ -68,6 +73,7 @@ class Graph():
         color = self.buyColor if isBuy else self.sellColor
         self.figure.add_annotation(x=x,
                                    y=y,
+                                   yref='y1' if isBuy else 'y2',
                                    text="{} #{}".format(action, name),
                                    showarrow=True,
                                    align="center",

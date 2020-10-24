@@ -47,21 +47,14 @@ class Algorithm():
             accountInfo['equity']))
         print("DEBUG: Final Account Equity:", accountInfo['equity'])
 
+        # Buy Plot
         Graph.addCandleSticks(
             x=allCandles.index.to_pydatetime(),
             open=allCandles['askopen'],
             high=allCandles['askhigh'],
             low=allCandles['asklow'],
             close=allCandles['askclose'],
-            name='Market Candles')
-
-        Graph.addCandleSticks(
-            x=allCandles.index.to_pydatetime(),
-            open=allCandles['bidopen'],
-            high=allCandles['bidhigh'],
-            low=allCandles['bidlow'],
-            close=allCandles['bidclose'],
-            name='Bid Market Candles')
+            name='Ask Market Candles')
 
         Graph.addIndicator(
             x=allCandles.index.to_pydatetime(),
@@ -98,4 +91,53 @@ class Algorithm():
             color="rgba(0, 0, 180, 0.4)"
         )
 
+        # Sell Plot
+        Graph.addCandleSticks(
+            x=allCandles.index.to_pydatetime(),
+            open=allCandles['bidopen'],
+            high=allCandles['bidhigh'],
+            low=allCandles['bidlow'],
+            close=allCandles['bidclose'],
+            name='Bid Market Candles',
+            plot=2)
+
+        Graph.addIndicator(
+            x=allCandles.index.to_pydatetime(),
+            y=Indicator.ema(allCandles['bidclose'], 20),
+            name='EMA 20',
+            color="rgba(0, 180, 0, 0.6)",
+            plot=2
+        )
+
+        Graph.addIndicator(
+            x=allCandles.index.to_pydatetime(),
+            y=Indicator.ema(allCandles['bidclose'], 100),
+            name='EMA 100',
+            color="rgba(0, 200, 0, 0.4)",
+            plot=2
+        )
+
+        Graph.addIndicator(
+            x=allCandles.index.to_pydatetime(),
+            y=Indicator.bbup(allCandles['bidclose'], 20),
+            name='BBup',
+            color="rgba(0, 0, 255, 0.6)",
+            plot=2
+        )
+
+        Graph.addIndicator(
+            x=allCandles.index.to_pydatetime(),
+            y=Indicator.bbmid(allCandles['bidclose'], 20),
+            name='BBmid',
+            color="rgba(0, 0, 200, 0.5)",
+            plot=2
+        )
+
+        Graph.addIndicator(
+            x=allCandles.index.to_pydatetime(),
+            y=Indicator.bblow(allCandles['bidclose'], 20),
+            name='BBlow',
+            color="rgba(0, 0, 180, 0.4)",
+            plot=2
+        )
         Graph.render()
