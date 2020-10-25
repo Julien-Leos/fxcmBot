@@ -2,8 +2,7 @@ import sys
 import pandas as pd
 
 def ptdrCFermeLeWeekend():
-    fileName = sys.argv[1]
-    data = pd.read_csv("config/EURUSD1.csv")
+    data = pd.read_csv("config/exampleData_EURUSD.csv")
 
     data['askopen'] = data['bidopen'].map(lambda x: x + 0.00013)
     data['asklow'] = data['bidlow'].map(lambda x: x + 0.00013)

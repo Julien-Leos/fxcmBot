@@ -1,8 +1,7 @@
 from fxcm import Fxcm
-from FxcmBacktest import FxcmBacktest
-from algorithm import Algorithm
+from dev.FxcmBacktest import FxcmBacktest
 import sys
-import utils
+import tools.utils as utils
 
 
 class Bot():
@@ -15,7 +14,9 @@ class Bot():
             self.fxcm = Fxcm(config, con)
         else:
             self.fxcm = FxcmBacktest(config, con)
-        self.algo = Algorithm(self.fxcm, config)
+        # Will automatically import strategy instead by .config.strategy
+        self.algo = getattr(getattr(__import__(
+            "strategies." + config['strategy']), config['strategy']), config['strategy'])(self.fxcm, config)
         self.config = config
 
     def run(self):

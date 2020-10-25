@@ -1,12 +1,12 @@
 # import fxcmpy
-from graph import Graph
-from convertisseur import ptdrCFermeLeWeekend
+from tools.graph import Graph
+from tools.convertisseur import ptdrCFermeLeWeekend
 import signal
 from time import sleep
 import datetime as dt
 import pandas as pd
-import utils
-import const
+import tools.utils as utils
+import tools.const as const
 
 
 class FxcmBacktest():

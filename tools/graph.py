@@ -69,7 +69,7 @@ class Graph():
         )
 
     @staticmethod
-    def addAction(x, y, name, action, isBuy=None, displayBoth=False):
+    def addAction(x, y, name, action, isBuy=None, plot=1):
         self = Graph.getInstance()
 
         parameters = dict(x=x,
@@ -84,7 +84,7 @@ class Graph():
                           borderwidth=2,
                           borderpad=2,
                           font=dict(
-                               size=16,
+                               size=14,
                                color="#ffffff"
                           ),
                           opacity=1)
@@ -96,11 +96,9 @@ class Graph():
         parameters['bgcolor'] = color
         parameters['arrowcolor'] = color
 
-        if displayBoth:
-            parameters['yref'] = 'y1'
-            self.figure.add_annotation(parameters)
-            parameters['yref'] = 'y2'
-            self.figure.add_annotation(parameters)
+        if plot == 0: # Plot 0 means BOTH plots!
+            self.addAction(x, y, name, action, isBuy, plot=1)
+            self.addAction(x, y, name, action, isBuy, plot=2)
         else:
-            parameters['yref'] = 'y1' if isBuy else 'y2'
+            parameters['yref'] = 'y1' if plot == 1 else 'y2'
             self.figure.add_annotation(parameters)

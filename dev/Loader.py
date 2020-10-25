@@ -15,7 +15,6 @@ class Loader():
         self.botFile = reload(self.botFile)
 
         try:
-            # getattr(self.botFile, "mainDev")(session.getConnection(), argv)
-            getattr(self.botFile, "mainDev")(None, argv)
+            getattr(self.botFile, "mainDev")(session.getConnection(), argv)
         except Exception as e:
             print("Error: ", e)
