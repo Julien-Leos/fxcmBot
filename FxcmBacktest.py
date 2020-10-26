@@ -163,7 +163,9 @@ class FxcmBacktest():
         self.__closePositions.append(FxcmBacktestClosePosition(position))
         self.__updateAccountInfo()
         isBuy = position.get_isBuy()
-        Graph.addAction(self.__getLastCandle().name, position.get_close(), positionId, 'Close', isBuy, 2 if isBuy else 1)
+        Graph.addAction(self.__getLastCandle().name, position.get_close(
+        ), 'Close #' + str(positionId) + ' (' + str(round(position.get_grossPL(), 2)) + ')', isBuy, 2 if isBuy else 1)
+        print("EQUITY = " + str(self.__account['balance']))
         return True
 
     def getCon(self):
@@ -193,12 +195,13 @@ class FxcmBacktest():
         newPosition = FxcmBacktestOpenPosition(
             self, lastCandle, newTradeId, self.__forexPair, isBuy, amount, limit, stop)
 
-        self.__account['usdMr'] += newPosition.get_usedMargin()
-        if self.__account['equity'] - self.__account['usdMr'] < 0:
+        if self.__account['usableMargin'] - (newPosition.get_usedMargin() * amount * 2) < 0:
             print("ERROR: Can't open position: Not enough usable margin.")
             return None
+        self.__account['usdMr'] += newPosition.get_usedMargin()
 
-        Graph.addAction(lastCandle.name, newPosition.get_open(), newTradeId, 'Open', isBuy, 1 if isBuy else 2)
+        Graph.addAction(lastCandle.name, newPosition.get_open(),
+                        'Open #' + str(newTradeId), isBuy, 1 if isBuy else 2)
         self.__openPositions.append(newPosition)
         return newPosition.get_tradeId()
 

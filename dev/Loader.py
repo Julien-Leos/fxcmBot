@@ -20,7 +20,7 @@ class Loader():
             print("Loading failed : ", e)
             sys.exit()
 
-    def run(self, session):
+    def run(self, session, argv):
         for botModuleFile in self.botModuleFiles:
             reload(botModuleFile)
         self.botFile = reload(self.botFile)
@@ -28,6 +28,6 @@ class Loader():
 
         try:
             getattr(self.botFile, "mainDev")(self.config, getattr(
-                self.algoFile, self.config['strategy']), session.getConnection())
+                self.algoFile, self.config['strategy']), session.getConnection(), argv)
         except Exception as e:
             print("Error: ", e)

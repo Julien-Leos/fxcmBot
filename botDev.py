@@ -16,7 +16,7 @@ def main():
             inputResult = input("# Press 'return' to start the bot")
             if inputResult == '':
                 print("# Press 'Crtl-C' to end the bot")
-                loader.run(session)
+                loader.run(session, sys.argv)
                 print("\n# Press 'Crtl-D' to close the program")
         except EOFError:
             print("\nClosing connection...")

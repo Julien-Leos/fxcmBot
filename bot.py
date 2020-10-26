@@ -25,7 +25,11 @@ class Bot():
                 break
 
 
-def mainDev(config, algo, con):
+def mainDev(config, algo, con, argv):
+    config = utils.parseConfigFile(argv)
+    if not config:
+        return
+
     config['devEnv'] = True
     bot = Bot(config, algo, con)
     bot.run()

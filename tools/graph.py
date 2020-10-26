@@ -23,7 +23,7 @@ class Graph():
             raise Exception("This class is a singleton!")
         Graph.__instance = self
         self.figure = make_subplots(
-            rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.01)
+            rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.01)
 
     @staticmethod
     def render():
@@ -31,7 +31,7 @@ class Graph():
         self.figure.show()
         # Reset graph when rendering.
         self.figure = make_subplots(
-            rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.01)
+            rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.01)
 
     @staticmethod
     def setTitle(title):
@@ -69,12 +69,12 @@ class Graph():
         )
 
     @staticmethod
-    def addAction(x, y, name, action, isBuy=None, plot=1):
+    def addAction(x, y, name, isBuy=None, plot=1):
         self = Graph.getInstance()
 
         parameters = dict(x=x,
                           y=y,
-                          text="{} #{}".format(action, name),
+                          text=name,
                           showarrow=True,
                           align="center",
                           arrowhead=2,
@@ -97,8 +97,8 @@ class Graph():
         parameters['arrowcolor'] = color
 
         if plot == 0:  # Plot 0 means BOTH plots!
-            self.addAction(x, y, name, action, isBuy, plot=1)
-            self.addAction(x, y, name, action, isBuy, plot=2)
+            self.addAction(x, y, name, isBuy, plot=1)
+            self.addAction(x, y, name, isBuy, plot=2)
         else:
             parameters['yref'] = 'y' + str(plot)
             self.figure.add_annotation(parameters)
