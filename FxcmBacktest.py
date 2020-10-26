@@ -162,7 +162,8 @@ class FxcmBacktest():
         self.__openPositions.remove(position)
         self.__closePositions.append(FxcmBacktestClosePosition(position))
         self.__updateAccountInfo()
-        Graph.addAction(self.__getLastCandle().name, position.get_close(), positionId, 'Close', not position.get_isBuy())
+        isBuy = position.get_isBuy()
+        Graph.addAction(self.__getLastCandle().name, position.get_close(), positionId, 'Close', isBuy, 2 if isBuy else 1)
         return True
 
     def getCon(self):
@@ -197,8 +198,7 @@ class FxcmBacktest():
             print("ERROR: Can't open position: Not enough usable margin.")
             return None
 
-        Graph.addAction(lastCandle.name, newPosition.get_open(),
-                        newTradeId, 'Open', newPosition.get_isBuy())
+        Graph.addAction(lastCandle.name, newPosition.get_open(), newTradeId, 'Open', isBuy, 1 if isBuy else 2)
         self.__openPositions.append(newPosition)
         return newPosition.get_tradeId()
 

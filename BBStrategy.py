@@ -5,9 +5,12 @@ from tools.indicator import Indicator
 
 class BBStrategy(Algorithm):
     BB_PERIOD = 20
-    BB_M1_TRENDING = 20
+    BB_M1_TRENDING = 0.0005
+    BB_M5_TRENDING = 0.0017
 
     m5Candles = None
+
+    bbTrending = None
 
     def tick(self, nextCandle, allCandles):
         # lastm5CandleSize = self.m5Candles.shape[0]
@@ -32,7 +35,7 @@ class BBStrategy(Algorithm):
 
         self.getBbTrending(bb, nextCandle)
 
-        if self.askBbTrending == False:
+        if self.bbTrending == False:
             if self.isAnyPositionOpen():  # Look for closing position
                 position = self.fxcm.getOpenPositions('list')[0]
                 if (position['isBuy'] and self.isPriceAboveBbMid(nextCandle['askclose'], bb['askbb']['mid'])) or (not position['isBuy'] and self.isPriceUnderBbMid(nextCandle['bidclose'], bb['bidbb']['mid'])):
@@ -49,14 +52,14 @@ class BBStrategy(Algorithm):
             self.fxcm.closePositions()
 
     def getBbTrending(self, bb, nextCandle):
-        newAskBbTrending = self.isTrending(bb['askbb'])
-        if self.askBbTrending == None or self.askBbTrending != newAskBbTrending:
+        newBbTrending = self.isTrending(bb['askbb'])
+        if self.bbTrending == None or self.bbTrending != newBbTrending:
             print("TREND CHANGE")
-            self.askBbTrending = newAskBbTrending
+            self.bbTrending = newBbTrending
             Graph.addAction(
-                nextCandle.name, bb['askbb']['mid'][-1], 0, 'TRENDING' if newAskBbTrending else 'TRENDLESS', True if newAskBbTrending else False, ['y1'])
+                nextCandle.name, bb['askbb']['mid'][-1], 0, 'TRENDING' if newBbTrending else 'TRENDLESS', True if newBbTrending else False, 1)
             Graph.addAction(
-                nextCandle.name, bb['bidbb']['mid'][-1], 0, 'TRENDING' if newAskBbTrending else 'TRENDLESS', True if newAskBbTrending else False, ['y2'])
+                nextCandle.name, bb['bidbb']['mid'][-1], 0, 'TRENDING' if newBbTrending else 'TRENDLESS', True if newBbTrending else False, 2)
 
     def isPriceAboveBbUp(self, price, bbUp):
         return price >= bbUp[-1]

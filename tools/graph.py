@@ -84,7 +84,7 @@ class Graph():
                           borderwidth=2,
                           borderpad=2,
                           font=dict(
-                               size=14,
+                               size=14 if isBuy != None else 10,
                                color="#ffffff"
                           ),
                           opacity=1)
