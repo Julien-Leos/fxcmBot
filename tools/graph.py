@@ -23,7 +23,7 @@ class Graph():
             raise Exception("This class is a singleton!")
         Graph.__instance = self
         self.figure = make_subplots(
-            rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.01)
+            rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.01)
 
     @staticmethod
     def render():
@@ -31,7 +31,7 @@ class Graph():
         self.figure.show()
         # Reset graph when rendering.
         self.figure = make_subplots(
-            rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.01)
+            rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.01)
 
     @staticmethod
     def setTitle(title):

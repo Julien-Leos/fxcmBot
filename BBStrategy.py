@@ -5,51 +5,46 @@ from tools.indicator import Indicator
 
 class BBStrategy(Algorithm):
     BB_PERIOD = 25
-    BB_M1_TRENDING = 0.0005
-    BB_M5_TRENDING = 0.0017
+    BB_SQUEEZE_MAX_DURATION = 50
+    BB_SQUEEZE_WIDTH = dict({'m1': 0.0006, 'm5': 0.001})
 
-    BB_SQUEEZE_WIDTH = 0.0006
-
-    m5Candles = None
+    # m5Candles = None
 
     bbTrending = 'no'
     bbSqueezing = None
+    bbSqueezeWidth = None
+    bbSqueezeDuration = 0
+
+    def start(self, firstCandle, allCandles):
+        self.bbSqueezeWidth = self.BB_SQUEEZE_WIDTH[self.config['period']]
 
     def tick(self, nextCandle, allCandles):
-        # lastm5CandleSize = self.m5Candles.shape[0]
-        # self.m5Candles = self.getUpperPeriod(
-        #     self.m5Candles, 5, nextCandle, allCandles)
-        # if self.m5Candles.shape[0] == lastm5CandleSize:
-        #     return
-
-        # if self.m5Candles.shape[0] < self.BB_PERIOD:
-        #     return
-
         if allCandles.shape[0] < self.BB_PERIOD:
             return
-
-        # if len(self.fxcm.getClosePositions('list')) > 0:  # TO REMOVE
-        #     return
 
         askBbCandles = allCandles['askclose'][-self.BB_PERIOD:]
         bidBbCandles = allCandles['bidclose'][-self.BB_PERIOD:]
         bb = dict({'askbb': Indicator.bb(askBbCandles, self.BB_PERIOD),
                    'bidbb': Indicator.bb(bidBbCandles, self.BB_PERIOD)})
 
-        # bbWidth = self.getBbWidth(bb['askbb'])
-
+        lastBbSqueezing = self.bbSqueezing
         bbWidth = bb['askbb']['up'][-1] - bb['askbb']['low'][-1]
-        self.bbSqueezing = bbWidth <= self.BB_SQUEEZE_WIDTH
+        self.bbSqueezing = bbWidth <= self.bbSqueezeWidth
 
-        if self.bbTrending != 'no':
+        if self.bbSqueezing == True and lastBbSqueezing == True: # Add duration to bb Squeeze
+            self.bbSqueezeDuration += 1
+        elif self.bbSqueezing == False and lastBbSqueezing == True: # Break duration of bb Squeeze
+            self.bbSqueezeDuration = 0
+
+        if self.bbTrending != 'no':  # If trending, Look for end of trending
             if (self.bbTrending == 'down' and self.isPriceAboveBbMid(nextCandle['askclose'], bb['askbb']['mid'])) or \
-                    (self.bbTrending == 'up' and self.isPriceUnderBbMid(nextCandle['askclose'], bb['askbb']['mid'])):  # Look for end of trending
+                    (self.bbTrending == 'up' and self.isPriceUnderBbMid(nextCandle['askclose'], bb['askbb']['mid'])):
                 self.bbTrending = 'no'
-                # Graph.addAction(
-                #     nextCandle.name, bb['askbb']['mid'][-1], 'TREENDLESS', False, 1)
-                # Graph.addAction(
-                #     nextCandle.name, bb['bidbb']['mid'][-1], 'TREENDLESS', False, 2)
-        else:
+                Graph.addAction(
+                    nextCandle.name, bb['askbb']['mid'][-1], 'TREENDLESS', False, 1)
+                Graph.addAction(
+                    nextCandle.name, bb['bidbb']['mid'][-1], 'TREENDLESS', False, 2)
+        else:  # If not trending
             if self.isAnyPositionOpen():  # Look for closing position
                 position = self.fxcm.getOpenPositions('list')[0]
                 if (position['isBuy'] and self.isPriceAboveBbMid(nextCandle['askclose'], bb['askbb']['mid'])) or \
@@ -57,42 +52,41 @@ class BBStrategy(Algorithm):
                     self.fxcm.closePosition(position['tradeId'])
             else:
                 if self.isPriceAboveBbUp(nextCandle['askclose'], bb['askbb']['up']):
-                    if self.bbSqueezing == True:
+                    # If squeezing and squeeze duration not too long
+                    if self.bbSqueezing == True and self.bbSqueezeDuration <= self.BB_SQUEEZE_MAX_DURATION:
                         self.bbTrending = 'up'
-                        # print("TREND UP")
-                        # Graph.addAction(
-                        #     nextCandle.name, bb['askbb']['mid'][-1], 'TRENDING UP', True, 1)
-                        # Graph.addAction(
-                        #     nextCandle.name, bb['bidbb']['mid'][-1], 'TRENDING UP', True, 2)
+                        print("TREND UP")
+                        Graph.addAction(
+                            nextCandle.name, bb['askbb']['mid'][-1], 'TRENDING UP', True, 1)
+                        Graph.addAction(
+                            nextCandle.name, bb['bidbb']['mid'][-1], 'TRENDING UP', True, 2)
                     else:
                         print("SELL")
-                        self.fxcm.sell(1500)
+                        stopLimit = self.getStop(
+                            bb['askbb']['up'][-1], bb['askbb']['low'][-1])
+                        self.fxcm.sell(self.getMaxAmount(
+                        ), stop=-stopLimit, limit=stopLimit)
                 elif self.isPriceUnderBbLow(nextCandle['bidclose'], bb['bidbb']['low']):
-                    if self.bbSqueezing == True:
+                    # If squeezing and squeeze duration not too long
+                    if self.bbSqueezing == True and self.bbSqueezeDuration <= self.BB_SQUEEZE_MAX_DURATION:
                         self.bbTrending = 'down'
-                        # print("TREND DOWN")
-                        # Graph.addAction(
-                        #     nextCandle.name, bb['askbb']['mid'][-1], 'TRENDING DOWN', True, 1)
-                        # Graph.addAction(
-                        #     nextCandle.name, bb['bidbb']['mid'][-1], 'TRENDING DOWN', True, 2)
+                        print("TREND DOWN")
+                        Graph.addAction(
+                            nextCandle.name, bb['askbb']['mid'][-1], 'TRENDING DOWN', True, 1)
+                        Graph.addAction(
+                            nextCandle.name, bb['bidbb']['mid'][-1], 'TRENDING DOWN', True, 2)
                     else:
                         print("BUY")
-                        self.fxcm.buy(1500)
+                        stopLimit = self.getStop(
+                            bb['bidbb']['up'][-1], bb['bidbb']['low'][-1])
+                        self.fxcm.buy(self.getMaxAmount(
+                        ), stop=-stopLimit, limit=stopLimit)
 
-        # self.getBbTrending(bb, nextCandle)
+    def getStop(self, bbup, bblow):
+        return (bbup - bblow) * 10000
 
-        # if self.isAnyPositionOpen():  # Look for closing position
-        #     position = self.fxcm.getOpenPositions('list')[0]
-        #     if (position['isBuy'] and self.isPriceAboveBbMid(nextCandle['askclose'], bb['askbb']['mid'])) or \
-        #             (not position['isBuy'] and self.isPriceUnderBbMid(nextCandle['bidclose'], bb['bidbb']['mid'])):
-        #         self.fxcm.closePosition(position['tradeId'])
-        # else:  # Try open position
-        #     if self.isPriceAboveBbUp(nextCandle['askclose'], bb['askbb']['up']):
-        #         print("SELL")
-        #         self.fxcm.sell(1)
-        #     elif self.isPriceUnderBbLow(nextCandle['bidclose'], bb['bidbb']['low']):
-        #         print("BUY")
-        #         self.fxcm.buy(1)
+    def getMaxAmount(self):
+        return int(self.fxcm.getAccountInfo()['usableMargin'] / 33.3)
 
     def getBbWidth(self, bb):
         return list(map(lambda tuple: tuple[0] - tuple[1], list(zip(bb['up'], bb['low']))))
@@ -121,9 +115,6 @@ class BBStrategy(Algorithm):
 
     def isTrending(self, bb):
         return bb['up'][-1] - bb['low'][-1] > self.BB_M1_TRENDING
-
-    def start(self, firstCandle, allCandles):
-        return
 
     def end(self, lastCandle, allCandles):
         accountInfo = self.fxcm.getAccountInfo()
@@ -177,20 +168,20 @@ class BBStrategy(Algorithm):
             plot=2
         )
 
-        bidbbWidth = self.getBbWidth(bidbb)
-        Graph.addIndicator(
-            x=allCandles.index.to_pydatetime(),
-            y=bidbbWidth,
-            name='Bid BB width',
-            color="rgba(0, 0, 180, 0.4)",
-            plot=3
-        )
+        # bidbbWidth = self.getBbWidth(bidbb)
+        # Graph.addIndicator(
+        #     x=allCandles.index.to_pydatetime(),
+        #     y=bidbbWidth,
+        #     name='Bid BB width',
+        #     color="rgba(0, 0, 180, 0.4)",
+        #     plot=3
+        # )
 
-        askbbWidth = self.getBbWidth(askbb)
-        Graph.addIndicator(
-            x=allCandles.index.to_pydatetime(),
-            y=askbbWidth,
-            name='Ask BB width',
-            color="rgba(0, 0, 180, 0.4)",
-            plot=3
-        )
+        # askbbWidth = self.getBbWidth(askbb)
+        # Graph.addIndicator(
+        #     x=allCandles.index.to_pydatetime(),
+        #     y=askbbWidth,
+        #     name='Ask BB width',
+        #     color="rgba(0, 0, 180, 0.4)",
+        #     plot=3
+        # )
