@@ -1,5 +1,5 @@
 from fxcm import Fxcm
-from dev.FxcmBacktest import FxcmBacktest
+from FxcmBacktest import FxcmBacktest
 import sys
 import tools.utils as utils
 
@@ -14,7 +14,6 @@ class Bot():
             self.fxcm = Fxcm(config, con)
         else:
             self.fxcm = FxcmBacktest(config, con)
-        # Will automatically import strategy instead by .config.strategy
         self.algo = algo(self.fxcm, config)
         self.config = config
 

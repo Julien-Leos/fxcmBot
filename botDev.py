@@ -9,7 +9,7 @@ def main():
         return
 
     loader = Loader()
-    loader.load(sys.argv, ["bot", "tools.utils", "algorithm", "fxcm", "dev.FxcmBacktest"])
+    loader.load(sys.argv, ["bot", "algorithm", "fxcm", "FxcmBacktest"])
 
     while True:
         try:

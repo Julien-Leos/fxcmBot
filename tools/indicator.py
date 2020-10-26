@@ -3,6 +3,7 @@ from pyti.bollinger_bands import upper_bollinger_band as bbup
 from pyti.bollinger_bands import middle_bollinger_band as bbmid
 from pyti.bollinger_bands import lower_bollinger_band as bblow
 
+
 class Indicator():
 
     # Example:
@@ -24,3 +25,7 @@ class Indicator():
     @staticmethod
     def bblow(data, period):
         return bblow(data, period)
+
+    @staticmethod
+    def bb(data, period):
+        return dict({'up': Indicator.bbup(data, period), 'mid': Indicator.bbmid(data, period), 'low': Indicator.bblow(data, period)})

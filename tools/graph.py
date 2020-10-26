@@ -96,9 +96,9 @@ class Graph():
         parameters['bgcolor'] = color
         parameters['arrowcolor'] = color
 
-        if plot == 0: # Plot 0 means BOTH plots!
+        if plot == 0:  # Plot 0 means BOTH plots!
             self.addAction(x, y, name, action, isBuy, plot=1)
             self.addAction(x, y, name, action, isBuy, plot=2)
         else:
-            parameters['yref'] = 'y1' if plot == 1 else 'y2'
+            parameters['yref'] = 'y' + str(plot)
             self.figure.add_annotation(parameters)

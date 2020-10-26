@@ -162,8 +162,7 @@ class FxcmBacktest():
         self.__openPositions.remove(position)
         self.__closePositions.append(FxcmBacktestClosePosition(position))
         self.__updateAccountInfo()
-        Graph.addAction(self.__getLastCandle().name, position.get_close(
-        ), positionId, 'Close', position.get_isBuy())
+        Graph.addAction(self.__getLastCandle().name, position.get_close(), positionId, 'Close', not position.get_isBuy())
         return True
 
     def getCon(self):
