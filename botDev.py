@@ -9,14 +9,14 @@ def main():
         return
 
     loader = Loader()
-    loader.load("bot", ["tools.utils", "algorithm", "fxcm", "dev.FxcmBacktest"])
+    loader.load(sys.argv, ["bot", "tools.utils", "algorithm", "fxcm", "dev.FxcmBacktest"])
 
     while True:
         try:
             inputResult = input("# Press 'return' to start the bot")
             if inputResult == '':
                 print("# Press 'Crtl-C' to end the bot")
-                loader.run(session, sys.argv)
+                loader.run(session)
                 print("\n# Press 'Crtl-D' to close the program")
         except EOFError:
             print("\nClosing connection...")

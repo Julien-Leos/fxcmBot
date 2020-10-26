@@ -42,9 +42,8 @@ class FxcmBacktest():
             config['end_date'], "%Y/%m/%d %H:%M")
 
         self.__config = config
-        # self.__leftCandles = self.getCandles(
-        #     config['period'], start=startDate, end=endDate)
-        self.__leftCandles = ptdrCFermeLeWeekend()
+        self.__leftCandles = self.getCandles(
+            config['period'], start=startDate, end=endDate)
         self.__candles = pd.DataFrame(columns=self.__leftCandles.columns)
 
         # End bot when Trigger Crtl-C
@@ -163,7 +162,8 @@ class FxcmBacktest():
         self.__openPositions.remove(position)
         self.__closePositions.append(FxcmBacktestClosePosition(position))
         self.__updateAccountInfo()
-        Graph.addAction(self.__getLastCandle().name, position.get_close(), positionId, 'Close', position.get_isBuy())
+        Graph.addAction(self.__getLastCandle().name, position.get_close(
+        ), positionId, 'Close', position.get_isBuy())
         return True
 
     def getCon(self):
@@ -198,7 +198,8 @@ class FxcmBacktest():
             print("ERROR: Can't open position: Not enough usable margin.")
             return None
 
-        Graph.addAction(lastCandle.name, newPosition.get_open(), newTradeId, 'Open', newPosition.get_isBuy())
+        Graph.addAction(lastCandle.name, newPosition.get_open(),
+                        newTradeId, 'Open', newPosition.get_isBuy())
         self.__openPositions.append(newPosition)
         return newPosition.get_tradeId()
 
@@ -218,8 +219,7 @@ class FxcmBacktestOpenPosition():
         self.__position = pd.Series({
             'tradeId': tradeId,
             'currency': forexPair,
-            # 'currencyPoint': utils.getPipCost(forexPair, lastCandle.name, self.__fxcm.getCon()),
-            'currencyPoint': 0.08,
+            'currencyPoint': utils.getPipCost(forexPair, lastCandle.name, self.__fxcm.getCon()),
             'isBuy': isBuy,
             'amountK': amount,
             'time': lastCandle.name,

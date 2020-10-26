@@ -9,14 +9,13 @@ class Bot():
     algo = None
     config = None
 
-    def __init__(self, config, con=None):
+    def __init__(self, config, algo, con=None):
         if config['backtest'] == 'false':
             self.fxcm = Fxcm(config, con)
         else:
             self.fxcm = FxcmBacktest(config, con)
         # Will automatically import strategy instead by .config.strategy
-        self.algo = getattr(getattr(__import__(
-            "strategies." + config['strategy']), config['strategy']), config['strategy'])(self.fxcm, config)
+        self.algo = algo(self.fxcm, config)
         self.config = config
 
     def run(self):
@@ -27,13 +26,9 @@ class Bot():
                 break
 
 
-def mainDev(con, argv):
-    config = utils.parseConfigFile(argv)
-    if not config:
-        return
-
+def mainDev(config, algo, con):
     config['devEnv'] = True
-    bot = Bot(config, con)
+    bot = Bot(config, algo, con)
     bot.run()
 
 
@@ -43,7 +38,8 @@ def main(argv):
         return
 
     config['devEnv'] = False
-    bot = Bot(config)
+    algo = getattr(__import__(config['strategy']), config['strategy'])
+    bot = Bot(config, algo)
     bot.run()
 
 

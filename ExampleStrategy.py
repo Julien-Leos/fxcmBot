@@ -8,7 +8,7 @@ class ExampleStrategy(Algorithm):
         print("First Tick")
 
     def tick(self, newCandle, allCandles):
-        print("Tick")
+        print("Tick TOTO rdtfyguhijok")
 
     def end(self, lastCandle, allCandles):
         print("Last tick")
