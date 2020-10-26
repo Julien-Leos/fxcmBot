@@ -1,6 +1,6 @@
 import configparser
 import pandas as pd
-import const
+import tools.const as const
 
 
 def displayDataFrame(dataFrame):
@@ -65,7 +65,11 @@ def getPipCost(forexPair, date, con):
 
 
 def checkLimitStopViability(limit, stop):
-    return limit > 0 and stop < 0
+    if limit and limit < 0:
+        return False
+    if stop and stop > 0:
+        return False
+    return True
 
 
 def checkLimitStop(isBuy, limit, stop, closePrice):

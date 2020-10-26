@@ -1,10 +1,12 @@
-import fxcmpy
+# import fxcmpy
+from tools.graph import Graph
+from tools.convertisseur import ptdrCFermeLeWeekend
 import signal
 from time import sleep
 import datetime as dt
 import pandas as pd
-import utils
-import const
+import tools.utils as utils
+import tools.const as const
 
 
 class FxcmBacktest():
@@ -29,7 +31,8 @@ class FxcmBacktest():
 
     def __init__(self, config, con):
         if config['devEnv'] == False:
-            self.__con = fxcmpy.fxcmpy(config_file='config/fxcm.cfg')
+            # self.__con = fxcmpy.fxcmpy(config_file='config/fxcm.cfg')
+            self.__con = None
         else:
             self.__con = con
 
@@ -154,12 +157,14 @@ class FxcmBacktest():
             positionId (int): Id of the position
         """
         position = self.getOpenPosition(positionId)
-
         self.__account['balance'] += position.get_grossPL()
         self.__account['usdMr'] -= position.get_usedMargin()
         self.__openPositions.remove(position)
         self.__closePositions.append(FxcmBacktestClosePosition(position))
         self.__updateAccountInfo()
+        isBuy = position.get_isBuy()
+        Graph.addAction(self.__getLastCandle().name, position.get_close(
+        ), 'Close #' + str(positionId) + ' (' + str(round(position.get_grossPL(), 2)) + ')', isBuy, 2 if isBuy else 1)
         return True
 
     def getCon(self):
@@ -189,11 +194,13 @@ class FxcmBacktest():
         newPosition = FxcmBacktestOpenPosition(
             self, lastCandle, newTradeId, self.__forexPair, isBuy, amount, limit, stop)
 
-        self.__account['usdMr'] += newPosition.get_usedMargin()
-        if self.__account['equity'] - self.__account['usdMr'] < 0:
+        if self.__account['usableMargin'] - (newPosition.get_usedMargin() * amount * 2) < 0:
             print("ERROR: Can't open position: Not enough usable margin.")
             return None
+        self.__account['usdMr'] += newPosition.get_usedMargin()
 
+        Graph.addAction(lastCandle.name, newPosition.get_open(),
+                        'Open #' + str(newTradeId), isBuy, 1 if isBuy else 2)
         self.__openPositions.append(newPosition)
         return newPosition.get_tradeId()
 

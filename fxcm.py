@@ -3,7 +3,7 @@ import signal
 from time import sleep
 import datetime as dt
 import pandas as pd
-import utils
+import tools.utils as utils
 
 
 class Fxcm():

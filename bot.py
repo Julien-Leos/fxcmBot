@@ -1,8 +1,7 @@
 from fxcm import Fxcm
 from FxcmBacktest import FxcmBacktest
-from algorithm import Algorithm
 import sys
-import utils
+import tools.utils as utils
 
 
 class Bot():
@@ -10,12 +9,12 @@ class Bot():
     algo = None
     config = None
 
-    def __init__(self, config, con=None):
+    def __init__(self, config, algo, con=None):
         if config['backtest'] == 'false':
             self.fxcm = Fxcm(config, con)
         else:
             self.fxcm = FxcmBacktest(config, con)
-        self.algo = Algorithm(self.fxcm, config)
+        self.algo = algo(self.fxcm, config)
         self.config = config
 
     def run(self):
@@ -26,13 +25,13 @@ class Bot():
                 break
 
 
-def mainDev(con, argv):
+def mainDev(config, algo, con, argv):
     config = utils.parseConfigFile(argv)
     if not config:
         return
 
     config['devEnv'] = True
-    bot = Bot(config, con)
+    bot = Bot(config, algo, con)
     bot.run()
 
 
@@ -42,7 +41,8 @@ def main(argv):
         return
 
     config['devEnv'] = False
-    bot = Bot(config)
+    algo = getattr(__import__(config['strategy']), config['strategy'])
+    bot = Bot(config, algo)
     bot.run()
 
 
