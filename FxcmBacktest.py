@@ -165,7 +165,6 @@ class FxcmBacktest():
         isBuy = position.get_isBuy()
         Graph.addAction(self.__getLastCandle().name, position.get_close(
         ), 'Close #' + str(positionId) + ' (' + str(round(position.get_grossPL(), 2)) + ')', isBuy, 2 if isBuy else 1)
-        print("EQUITY = " + str(self.__account['balance']))
         return True
 
     def getCon(self):
