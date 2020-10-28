@@ -77,10 +77,9 @@ class Fxcm():
                 self.__candles = self.__candles.append(nextCandle)
                 return (nextCandle, self.__candles)
 
-            # Display prompt and sleep 1 second
+            # Display prompt and sleep 60 second
             print("# Algorithm's last run at %s" % nextCandle.name)
-            # print("\033[A")
-            sleep(1)
+            sleep(60)
         return (pd.Series(), self.__candles)
 
     def buy(self, amount, limit=None, stop=None):
