@@ -78,9 +78,8 @@ class Fxcm():
                 return (nextCandle, self.__candles)
 
             # Display prompt and sleep 1 second
-            print("# Algorithm's last run at %s" %
-                  nextCandle.name, end="\r")
-            print("\033[A")
+            print("# Algorithm's last run at %s" % nextCandle.name, end="\r")
+            # print("\033[A")
             sleep(1)
         return (pd.Series(), self.__candles)
 
