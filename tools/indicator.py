@@ -2,6 +2,7 @@ from pyti.exponential_moving_average import exponential_moving_average as ema
 from pyti.bollinger_bands import upper_bollinger_band as bbup
 from pyti.bollinger_bands import middle_bollinger_band as bbmid
 from pyti.bollinger_bands import lower_bollinger_band as bblow
+from pyti.stochrsi import stochrsi as stochrsi
 
 
 class Indicator():
@@ -29,3 +30,7 @@ class Indicator():
     @staticmethod
     def bb(data, period):
         return dict({'up': Indicator.bbup(data, period), 'mid': Indicator.bbmid(data, period), 'low': Indicator.bblow(data, period)})
+
+    @staticmethod
+    def stochrsi(data, period):
+        return stochrsi(data, period)

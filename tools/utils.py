@@ -1,6 +1,7 @@
 import configparser
 import pandas as pd
 import tools.const as const
+import datetime as dt
 
 
 def displayDataFrame(dataFrame):
@@ -55,13 +56,13 @@ def getPipCost(forexPair, date, con):
     forexPairExchange = con.get_candles(
         forexPair, period='m1', number=1, start=date, end=date, columns=["askopen"])
     if forexPairExchange.size == 0:
-        return getPipCost(forexPair, date - dt.timedelta(minutes=1))
+        return getPipCost(forexPair, date - dt.timedelta(minutes=1), con)
     forexPairExchangeValue = forexPairExchange['askopen'].iloc[0]
     if forexPair.find(const.ACCOUNT_CURRENCY) != -1:
         return multiplier / forexPairExchangeValue * (const.LOT_SIZE / 10)
     else:
         forexPairSecond = forexPair.split('/')[1]
-        return getPipCost(const.ACCOUNT_CURRENCY + '/' + forexPairSecond)
+        return getPipCost(const.ACCOUNT_CURRENCY + '/' + forexPairSecond, con)
 
 
 def checkLimitStopViability(limit, stop):

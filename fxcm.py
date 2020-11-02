@@ -4,6 +4,7 @@ from time import sleep
 import datetime as dt
 import pandas as pd
 import tools.utils as utils
+import time
 
 
 class Fxcm():
